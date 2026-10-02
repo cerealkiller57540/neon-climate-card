@@ -100,7 +100,7 @@ The other `flow_*` settings (`fan`, `wobble`, `speed`, `taper`, `glow`, `smoke_s
 
 **Some cards go blank on my Android phone.** Android WebViews keep at most 8 WebGL contexts per page and drop the oldest one. This card uses a single context and only while the airflow is visible. If you run many WebGL cards on one view, use `neon-climate-card` (CSS) or `flow_quality: off` on some of them.
 
-**Which theme is in the screenshots?** Neo Tokyo, from [Home-Assistant-Neon-Cards](https://github.com/cerealkiller57540/Home-Assistant-Neon-Cards). The card works with any theme.
+**Which theme is in the screenshots?** Neo Tokyo, the author's own dark theme (not published). The card works with any theme.
 
 ## 🌃 More neon cards
 
