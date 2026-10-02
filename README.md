@@ -17,7 +17,10 @@
 
 The air under the louvres is not a looping animation: it is a small Navier–Stokes solver running on the GPU. One jet per slot, the colour follows the HVAC mode, the strength follows the fan speed, and the slats follow `swing_mode`.
 
-<img src="https://raw.githubusercontent.com/cerealkiller57540/neon-climate-card/main/images/heat.png" alt="Neon Climate Card in heating mode" width="448">
+<p>
+  <img src="https://raw.githubusercontent.com/cerealkiller57540/neon-climate-card/main/images/heat.png" alt="Neon Climate Card in heating mode" width="400">
+  <img src="https://raw.githubusercontent.com/cerealkiller57540/neon-climate-card/main/images/off.png" alt="Neon Climate Card switched off" width="400">
+</p>
 
 ## ✨ Features
 
