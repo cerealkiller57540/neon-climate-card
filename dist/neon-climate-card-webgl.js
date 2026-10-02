@@ -1,4 +1,4 @@
-/* ── neon-climate-card-webgl v1.6.3 ────────────────────────────────────────────
+/* ── neon-climate-card-webgl v1.6.4 ────────────────────────────────────────────
  * Variante WEBGL de neon-climate-card : le souffle sous la grille n'est plus une
  * animation 2D scriptée mais un vrai fluide (Navier-Stokes stable, lignée Stam /
  * PavelDoGreat) rendu par shaders. Chaque fente de la grille est un jet à part
@@ -51,7 +51,7 @@
     'DM Sans','Playfair Display','Cinzel',
   ];
 
-  const CARD_VERSION = '1.6.3';
+  const CARD_VERSION = '1.6.4';
 
   /* Défauts validés au banc (climate_flow_v2.html). Ce sont EUX la référence :
    * les valeurs "théoriques" de la v1 avaient été calibrées sur une géométrie
@@ -2418,6 +2418,7 @@
             letter-spacing: inherit;
             line-height: inherit;
             text-shadow: none;
+            opacity: 0;  /* repos : les copies ne se voient que pendant .playing */
           }
           .glitch-wrap.playing .g1 { animation: glitch  0.35s steps(1) forwards; }
           .glitch-wrap.playing .g2 { animation: glitch2 0.35s steps(1) forwards 0.04s; }

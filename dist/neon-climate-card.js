@@ -544,6 +544,7 @@ class NeonClimateCard extends HTMLElement {
           letter-spacing: inherit;
           line-height: inherit;
           text-shadow: none;
+          opacity: 0;  /* repos : les copies ne se voient que pendant .playing */
         }
         .glitch-wrap.playing .g1 { animation: glitch  0.35s steps(1) forwards; }
         .glitch-wrap.playing .g2 { animation: glitch2 0.35s steps(1) forwards 0.04s; }
