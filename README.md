@@ -96,6 +96,8 @@ The other `flow_*` settings (`fan`, `wobble`, `speed`, `taper`, `glow`, `smoke_s
 
 ## ❓ FAQ
 
+**Which languages are supported?** English and French. The editor and the card texts follow your Home Assistant language: French if it is French, English otherwise. Reload the page after changing the language.
+
 **The airflow does not show.** It only shows when the unit is not `off`. If you set `power_entity`, it also needs the sensor to read above `power_threshold`.
 
 **Some cards go blank on my Android phone.** Android WebViews keep at most 8 WebGL contexts per page and drop the oldest one. This card uses a single context and only while the airflow is visible. If you run many WebGL cards on one view, use `neon-climate-card` (CSS) or `flow_quality: off` on some of them.

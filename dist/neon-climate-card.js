@@ -58,6 +58,124 @@ function hexRgb(hex) {
 function rgba(hex, a) { const c = hexRgb(hex); return `rgba(${c.r},${c.g},${c.b},${a})`; }
 
 // ─── Card ─────────────────────────────────────────────────────────────────────
+/* ── i18n FR/EN : la clé est la chaîne française (le français s'affiche tel quel) ── */
+let _lang = /^fr/i.test(document.documentElement.lang || '') ? 'fr' : 'en';   // HA pose <html lang> ; hass.language fait foi ensuite
+const _EN = {
+ "'entity' requis": "'entity' is required",
+ "Animation air": "Air animation",
+ "Augmenter": "Increase",
+ "Auto — léger sur écran dense (recommandé)": "Auto — light on dense screens (recommended)",
+ "Badge": "Badge",
+ "Bout chaud (26° et MAX)": "Hot end (26° and MAX)",
+ "Bout froid (16°)": "Cold end (16°)",
+ "Boutons machine (ventilation / volet)": "Machine buttons (fan / swing)",
+ "Boutons mode": "Mode buttons",
+ "CIBLE": "TARGET",
+ "Capteurs": "Sensors",
+ "Complet — canvas jusqu'à 2×": "Full — canvas up to 2×",
+ "Couleur de l'icône": "Icon colour",
+ "Couleur display AC": "AC display colour",
+ "Couleur du glow": "Glow colour",
+ "Couleur glow": "Glow colour",
+ "Couleur icône": "Icon colour",
+ "Couleur pill température": "Temperature pill colour",
+ "Couleur titre": "Title colour",
+ "Couleurs": "Colours",
+ "Couleurs boutons mode": "Mode button colours",
+ "Dessus": "Top",
+ "Diminuer": "Decrease",
+ "Display AC": "AC display",
+ "Dot-matrix / display": "Dot-matrix / display",
+ "Double-clic : revenir au défaut": "Double-click: back to default",
+ "Droite": "Right",
+ "Défauts = réglages validés au banc (27/09/2026). Double-clic sur une valeur pour y revenir.": "Defaults = settings validated on the test bench. Double-click a value to reset it.",
+ "Défauts = réglages validés au banc. Double-clic sur une valeur pour y revenir.": "Defaults = settings validated on the test bench. Double-click a value to reset it.",
+ "Dégradé — arrivée": "Gradient — to",
+ "Dégradé — départ": "Gradient — from",
+ "Désactivé — aucune animation": "Off — no animation",
+ "Effets avancés du titre": "Advanced title effects",
+ "En-tête": "Header",
+ "Entité climate *": "Climate entity *",
+ "Entité humidité": "Humidity entity",
+ "Entité principale": "Main entity",
+ "Entité puissance": "Power entity",
+ "Entité, capteurs & options": "Entity, sensors & options",
+ "Espacement": "Spacing",
+ "FAN (bouton cycle)": "FAN (cycle button)",
+ "Facultatif — anime le flux d'air seulement si puissance ≥ seuil (sinon basé sur le mode seul)": "Optional — animates the airflow only if power ≥ threshold (otherwise based on the mode alone)",
+ "Facultatif — sinon current_humidity de l'entité climate": "Optional — otherwise current_humidity of the climate entity",
+ "Flux d'air (WebGL)": "Airflow (WebGL)",
+ "Gauche": "Left",
+ "Gaz rares & radiations — la teinte monte avec le réglage": "Noble gases & radiation — the hue rises with the setting",
+ "Glow du titre": "Title glow",
+ "Glow icône + titre": "Icon + title glow",
+ "Gradient début": "Gradient start",
+ "Gradient fin": "Gradient end",
+ "Gradient titre": "Title gradient",
+ "Graduations (opacité)": "Ticks (opacity)",
+ "Halo": "Halo",
+ "Icône (mdi)": "Icon (mdi)",
+ "Italique": "Italic",
+ "Léger — canvas 1×, moins gourmand": "Light — 1× canvas, less demanding",
+ "Majuscules": "Uppercase",
+ "Marche / arrêt": "On / off",
+ "Mêmes réglages que la neon-entities-card. Text-shadow, si renseigné, remplace le glow.": "Same settings as neon-entities-card. Text-shadow, if set, replaces the glow.",
+ "Nom affiché": "Display name",
+ "Onde au relâché (×)": "Release wave (×)",
+ "Options": "Options",
+ "Ouverture du volet": "Vane opening",
+ "Pill cible": "Target pill",
+ "Pilule (entités à 2 consignes)": "Pill (dual-setpoint entities)",
+ "Police": "Font",
+ "Position icône": "Icon position",
+ "Qualité": "Quality",
+ "Réglages fins du flux (19 paramètres)": "Fine flow settings (19 parameters)",
+ "Réglette de consigne": "Setpoint slider",
+ "Scintillement du titre": "Title flicker",
+ "Seuil puissance (W)": "Power threshold (W)",
+ "Sous-titre": "Subtitle",
+ "Sur mobile (écran dense), « léger » rend le flux PLUS visible et ~7× moins coûteux : à 2× la même matière est diluée sur 4× plus de pixels. L'animation se met aussi en veille dès que la card sort de l'écran.": "On mobile (dense screen), “light” makes the flow MORE visible and ~7× cheaper: at 2× the same material is spread over 4× more pixels. The animation also pauses as soon as the card leaves the screen.",
+ "Taille de l'icône": "Icon size",
+ "Taille du bouton (px)": "Knob size (px)",
+ "Taille du glow": "Glow size",
+ "Taille glow": "Glow size",
+ "Taille icône (px)": "Icon size (px)",
+ "Taille titre": "Title size",
+ "Température de la pièce": "Room temperature",
+ "Text-shadow": "Text-shadow",
+ "Text-shadow (override manuel, prioritaire sur glow)": "Text-shadow (manual override, takes priority over glow)",
+ "Titre": "Title",
+ "Titre en dégradé": "Gradient title",
+ "Triple neon glow": "Triple neon glow",
+ "Ventilation — maxi": "Fan — max",
+ "Ventilation — mini": "Fan — min",
+ "Vide = friendly_name": "Empty = friendly_name",
+ "Volet — fermé": "Vane — closed",
+ "Volet — grand ouvert": "Vane — wide open",
+ "défaut : blanc cassé": "default: off-white",
+ "défaut : couleur du titre": "default: title colour",
+ "défaut : couleur primaire — ex rgb(var(--rgb-lavande))": "default: primary colour — e.g. rgb(var(--rgb-lavande))",
+ "défaut : taille du titre": "default: title size",
+ "ex: Climatisation": "e.g. Air conditioning",
+ "optionnel": "optional",
+ "optionnel — texte sous le titre": "optional — text under the title",
+ "optionnel — étiquette courte à côté du titre, ex: AUTO": "optional — short label next to the title, e.g. AUTO",
+ "parcourir": "browse",
+ "Épaisseur": "Weight",
+ "— thème HA —": "— HA theme —"
+};
+const _t = (fr) => {
+  if (_lang === 'fr' || fr == null || fr === '') return fr;
+  const k = String(fr).replace(/\s+/g, ' ').trim();
+  return _EN[k] ?? fr;
+};
+const _setLang = (h, o) => {   // o = instance (card/éditeur) : true tant que LA LANGUE APPLIQUÉE À CETTE INSTANCE n'est pas la bonne
+  const l = /^fr/i.test(String(h?.locale?.language || h?.language || '')) ? 'fr' : 'en';
+  _lang = l;
+  if (o) { if (o._li === l) return false; o._li = l; return true; }
+  return false;
+};
+
 class NeonClimateCard extends HTMLElement {
   constructor() {
     super();
@@ -91,7 +209,7 @@ class NeonClimateCard extends HTMLElement {
   }
 
   setConfig(config) {
-    if (!config.entity) throw new Error("neon-climate-card: 'entity' requis");
+    if (!config.entity) throw new Error("neon-climate-card: " + _t("'entity' requis"));
     // classe low-power posée ici (PAS dans le constructor : interdit de toucher
     // aux attributs/classes du host au constructor → NotSupportedError).
     if (NCC_IS_LOW_POWER) this.classList.add('low-power');
@@ -122,7 +240,13 @@ class NeonClimateCard extends HTMLElement {
   static getStubConfig()    { return { entity: 'climate.example' }; }
   getCardSize()             { return 4; }
 
-  set hass(hass) { this._hass = hass; this._update(); }
+_i18nStatic() {   /* textes fixes du gabarit : ré-appliqués quand la langue change (le gabarit est construit avant hass) */
+    const sr = this.shadowRoot; if (!sr) return;
+    const pl = sr.querySelector('.pill-label'); if (pl) pl.textContent = _t('CIBLE');
+    const mi = sr.querySelector('.temp-minus'); if (mi) mi.setAttribute('aria-label', _t('Diminuer'));
+    const pu = sr.querySelector('.temp-plus'); if (pu) pu.setAttribute('aria-label', _t('Augmenter'));
+  }
+  set hass(hass) { this._hass = hass; if (_setLang(hass, this)) this._i18nStatic(); this._update(); }
 
   // ── Couleurs dynamiques ────────────────────────────────────────────────────
 
@@ -613,12 +737,12 @@ class NeonClimateCard extends HTMLElement {
             </div>
             <div class="pill-wrap">
               <div class="temp-pill">
-                <button class="temp-minus" aria-label="Diminuer">−</button>
+                <button class="temp-minus" aria-label="${_t('Diminuer')}">−</button>
                 <div class="pill-center">
-                  <div class="pill-label">CIBLE</div>
+                  <div class="pill-label">${_t('CIBLE')}</div>
                   <div class="pill-value">--°</div>
                 </div>
-                <button class="temp-plus" aria-label="Augmenter">+</button>
+                <button class="temp-plus" aria-label="${_t('Augmenter')}">+</button>
               </div>
             </div>
           </div>
@@ -1121,7 +1245,7 @@ class NeonClimateCardEditor extends HTMLElement {
     if (!this._rendered) { this._rendered = true; this._render(); }
     else this._syncValues();
   }
-  set hass(h) { this._hass = h; this._fillDatalists(); }   // JAMAIS de render ici
+  set hass(h) { this._hass = h; if (_setLang(h, this) && this._rendered) this._render(); this._fillDatalists(); }   // JAMAIS de render ici
   disconnectedCallback() { this._rendered = false; }
 
   // ── Lecture / écriture config (clés imbriquées via ".") ────────────
@@ -1165,19 +1289,19 @@ class NeonClimateCardEditor extends HTMLElement {
   }
 
   // ── Helpers de champ (signatures FIXES) ────────────────────────────
-  _section(t) { const d = document.createElement('div'); d.className = 'sec'; d.textContent = t; this.appendChild(d); return d; }
-  _hint(t)    { const d = document.createElement('div'); d.className = 'hint'; d.textContent = t; this.appendChild(d); return d; }
+  _section(t) { const d = document.createElement('div'); d.className = 'sec'; d.textContent = _t(t); this.appendChild(d); return d; }
+  _hint(t)    { const d = document.createElement('div'); d.className = 'hint'; d.textContent = _t(t); this.appendChild(d); return d; }
 
   _text(key, label, ph = '') {
-    const w = this._row(label).wrap;
+    const w = this._row(_t(label)).wrap;
     const inp = document.createElement('input');
-    inp.type = 'text'; inp.placeholder = ph; inp.dataset.key = key; inp.value = this._read(key) ?? '';
+    inp.type = 'text'; inp.placeholder = _t(ph); inp.dataset.key = key; inp.value = this._read(key) ?? '';
     inp.addEventListener('input', () => this._set(key, inp.value));
     w.appendChild(inp); return inp;
   }
 
   _toggle(key, label, defaultOn = false) {
-    const w = this._row(label).wrap;
+    const w = this._row(_t(label)).wrap;
     const cb = document.createElement('input'); cb.type = 'checkbox'; cb.dataset.key = key;
     if (defaultOn) cb.dataset.defaultOn = '1';
     const v = this._read(key); cb.checked = defaultOn ? (v !== false) : !!v;
@@ -1188,9 +1312,9 @@ class NeonClimateCardEditor extends HTMLElement {
 
   // cssDefault = couleur appliquée quand le champ est vide → picker la montre résolue.
   _color(key, label, cssDefault = null, ph = 'ex: #FF3366 / rgb(var(--rgb-lavande)) / var(--primary-color)') {
-    const w = this._row(label).wrap;
+    const w = this._row(_t(label)).wrap;
     const box = document.createElement('div'); box.className = 'color-row';
-    const txt = document.createElement('input'); txt.type = 'text'; txt.placeholder = ph; txt.dataset.key = key; txt.value = this._read(key) ?? '';
+    const txt = document.createElement('input'); txt.type = 'text'; txt.placeholder = _t(ph); txt.dataset.key = key; txt.value = this._read(key) ?? '';
     const pick = document.createElement('input'); pick.type = 'color';
     txt._pick = pick; txt._cssDefault = cssDefault;
     const refresh = () => { pick.value = this._toHex(txt.value) || (cssDefault ? this._resolveColor(cssDefault) : null) || '#6200EA'; };
@@ -1211,7 +1335,7 @@ class NeonClimateCardEditor extends HTMLElement {
   }
 
   _icon(key, label) {
-    const w = this._row(`${label} — <a href="https://pictogrammers.com/library/mdi/" target="_blank" rel="noopener" class="mdi-link">parcourir ↗</a>`, true).wrap;
+    const w = this._row(`${_t(label)} — <a href="https://pictogrammers.com/library/mdi/" target="_blank" rel="noopener" class="mdi-link">${_t('parcourir')} ↗</a>`, true).wrap;
     const box = document.createElement('div'); box.className = 'icon-row';
     const inp = document.createElement('input'); inp.type = 'text'; inp.placeholder = 'mdi:home'; inp.dataset.key = key; inp.value = this._read(key) ?? '';
     const prev = document.createElement('div'); prev.className = 'icon-preview'; prev.dataset.preview = key;
@@ -1220,7 +1344,7 @@ class NeonClimateCardEditor extends HTMLElement {
   }
 
   _entity(key, label, prefix = '') {
-    const w = this._row(label).wrap;
+    const w = this._row(_t(label)).wrap;
     const inp = document.createElement('input'); inp.type = 'text'; inp.autocomplete = 'off';
     inp.placeholder = (prefix || 'domain') + '.…'; inp.dataset.key = key; inp.dataset.prefix = prefix;
     inp.setAttribute('list', `ncc-ent-${(prefix || 'all').replace(/[^a-z]/g, '')}`);
@@ -1231,13 +1355,13 @@ class NeonClimateCardEditor extends HTMLElement {
 
   // Liste déroulante. options = [string] ou [{value,label}]. emptyLabel = 1ère option vide (défaut).
   _select(key, label, options, emptyLabel = null) {
-    const w = this._row(label).wrap;
+    const w = this._row(_t(label)).wrap;
     const sel = document.createElement('select'); sel.dataset.key = key;
-    if (emptyLabel !== null) { const o = document.createElement('option'); o.value = ''; o.textContent = emptyLabel; sel.appendChild(o); }
+    if (emptyLabel !== null) { const o = document.createElement('option'); o.value = ''; o.textContent = _t(emptyLabel); sel.appendChild(o); }
     options.forEach(opt => {
       const o = document.createElement('option');
       o.value = (typeof opt === 'object') ? opt.value : opt;
-      o.textContent = (typeof opt === 'object') ? opt.label : opt;
+      o.textContent = _t((typeof opt === 'object') ? opt.label : opt);
       sel.appendChild(o);
     });
     sel.value = this._read(key) ?? '';
