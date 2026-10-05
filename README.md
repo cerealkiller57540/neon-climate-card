@@ -1,6 +1,6 @@
 <div align="center">
 
-# ❄️ Neon Climate Card
+<img src="https://raw.githubusercontent.com/cerealkiller57540/neon-climate-card/main/images/logo.png" alt="Neon Climate Card" width="480">
 
 **A cyberpunk climate card for Home Assistant, with a real fluid simulation for the airflow.**
 
