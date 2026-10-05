@@ -1,4 +1,4 @@
-/* ── neon-climate-card-webgl v1.6.4 ────────────────────────────────────────────
+/* ── neon-climate-card-webgl v1.7.1 ────────────────────────────────────────────
  * Variante WEBGL de neon-climate-card : le souffle sous la grille n'est plus une
  * animation 2D scriptée mais un vrai fluide (Navier-Stokes stable, lignée Stam /
  * PavelDoGreat) rendu par shaders. Chaque fente de la grille est un jet à part
@@ -51,7 +51,7 @@
     'DM Sans','Playfair Display','Cinzel',
   ];
 
-  const CARD_VERSION = '1.6.4';
+  const CARD_VERSION = '1.7.1';
 
   /* Défauts validés au banc (climate_flow_v2.html). Ce sont EUX la référence :
    * les valeurs "théoriques" de la v1 avaient été calibrées sur une géométrie
@@ -1479,11 +1479,14 @@ const _setLang = (h, o) => {   // o = instance (card/éditeur) : true tant que L
         el.style.transitionDelay = (i * 0.06) + 's';
       });
 
-      // Lèvre allumée ∝ vitesse, éteinte à l'arrêt.
+      // Lèvre allumée ∝ vitesse, éteinte à l'arrêt ET au repos : elle suit le
+      // même _airFlowing que le flux (clim ON mais sous le seuil de puissance =
+      // rien ne souffle, donc pas de lèvre).
       const body = sr.querySelector('.ac-body');
       if (body){
         const f = Math.max(1, Math.min(4, P.force));
-        const lip = mode === 'off' ? 0 : (f >= 4 ? 0.70 : 0.30 + 0.28*(f-1));
+        const lip = (mode === 'off' || this._airFlowing === false) ? 0
+                  : (f >= 4 ? 0.70 : 0.30 + 0.28*(f-1));
         body.style.setProperty('--lip', lip.toFixed(2));
         body.style.setProperty('--lip-color', color);
       }
