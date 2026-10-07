@@ -51,7 +51,7 @@
     'DM Sans','Playfair Display','Cinzel',
   ];
 
-  const CARD_VERSION = '1.7.3';
+  const CARD_VERSION = '1.8.0';
 
   /* Défauts ajustés visuellement : ce sont eux la référence (les valeurs
    * théoriques donnaient un panache anémique). */
@@ -837,6 +837,27 @@
 /* ── i18n FR/EN : la clé est la chaîne française (le français s'affiche tel quel) ── */
 let _lang = /^fr/i.test(document.documentElement.lang || '') ? 'fr' : 'en';   // HA pose <html lang> ; hass.language fait foi ensuite
 const _EN = {
+ "Typographie": "Typography",
+ "Glow & gradient": "Glow & gradient",
+ "nombre de fentes — un faisceau par fente": "number of vents — one beam per vent",
+ "évasement total du souffle, en degrés": "total spread of the airflow, in degrees",
+ "oscillation latérale des faisceaux": "sideways sway of the beams",
+ "vitesse de cette oscillation": "speed of that sway",
+ "finesse du jet — au-dessus de 1, les faisceaux se séparent": "jet thinness — above 1, the beams separate",
+ "exposition générale du flux": "overall exposure of the flow",
+ "halo autour des faisceaux": "halo around the beams",
+ "débit de teinte — multiplié par la vitesse de ventilation": "tint output — multiplied by the fan speed",
+ "décalage des bouffées d'une fente à l'autre": "offset of the puffs from one vent to the next",
+ "cadence des bouffées": "puff rate",
+ "-1 = teinte reprise du mode (froid bleu, chaud rouge…)": "-1 = hue taken from the mode (cool blue, heat red…)",
+ "position du volet — utilisée SEULEMENT si l'entité n'a pas de swing_mode": "louver position — used ONLY if the entity has no swing_mode",
+ "vitesse ventilateur — utilisée SEULEMENT si l'entité n'a pas de fan_mode": "fan speed — used ONLY if the entity has no fan_mode",
+ "vorticité — turbulence dans le flux": "vorticity — turbulence in the flow",
+ "dissipation de la vélocité": "velocity dissipation",
+ "dissipation de la teinte": "tint dissipation",
+ "densité des poussières en suspension": "density of floating dust",
+ "taille des poussières": "dust size",
+ "hauteur du fondu au noir en bas du flux": "height of the fade to black at the bottom of the flow",
  "'entity' requis": "'entity' is required",
  "Animation air": "Air animation",
  "Augmenter": "Increase",
@@ -2886,7 +2907,7 @@ const _setLang = (h, o) => {   // o = instance (card/éditeur) : true tant que L
 
       const out = document.createElement('span');
       out.style.cssText = 'flex:none;width:52px;text-align:right;font-variant-numeric:tabular-nums;' +
-                          'font-size:12px;color:var(--secondary-text-color);';
+                          'font-size:12px;color:var(--ned-label);';
       const show = () => { out.textContent = parseFloat(r.value).toFixed(dec); };
       show();
 
@@ -2913,7 +2934,7 @@ const _setLang = (h, o) => {   // o = instance (card/éditeur) : true tant que L
       const s = document.createElement('select');
       s.style.cssText = 'width:100%;padding:6px 8px;border-radius:6px;cursor:pointer;' +
                         'background:var(--secondary-background-color);color:var(--primary-text-color);' +
-                        'border:1px solid var(--divider-color);';
+                        'border:1px solid var(--ned-line);';
       options.forEach(opt => {
         // accepte une string nue (ex: NEON_FONTS) ou un tuple [valeur, libellé] (ex: flow_quality)
         const [v, lbl] = Array.isArray(opt) ? opt : [opt, opt];
@@ -2929,22 +2950,94 @@ const _setLang = (h, o) => {   // o = instance (card/éditeur) : true tant que L
     }
 
     _schema() {
-      // tout le schéma de la prod (en-tête, entités, couleurs de mode, display…)
-      this._schemaBase();
+      this._section('Entité principale');
+      this._entity('entity', 'Entité climate *', 'climate');
+      this._text('name', 'Nom affiché', 'Vide = friendly_name');
 
-      this._section('Flux d\'air (WebGL)');
-      this._select('flow_quality', 'Qualité', [
-        ['auto',  'Auto — léger sur écran dense (recommandé)'],
-        ['full',  'Complet — canvas jusqu\'à 2×'],
-        ['light', 'Léger — canvas 1×, moins gourmand'],
-        ['off',   'Désactivé — aucune animation'],
-      ], 'auto', 'Sur mobile (écran dense), « léger » rend le flux PLUS visible et ~7× moins coûteux : ' +
-                 'à 2× la même matière est diluée sur 4× plus de pixels. L\'animation se met aussi en ' +
-                 'veille dès que la card sort de l\'écran.');
-      this._group('Réglages fins du flux (19 paramètres)', false, () => {
-        this._hint('Double-clic sur une valeur pour revenir au défaut.');
-        FLOW_META.forEach(([k, min, max, step, dec, note]) => {
-          this._slider('flow_' + k, k, min, max, step, dec, FLOW_DEFAULTS[k], note);
+      this._group('En-tête', false, () => {
+        this._text('header.title', 'Titre', 'ex: Climatisation');
+        this._text('header.subtitle', 'Sous-titre', 'optionnel — texte sous le titre');
+        this._icon('header.icon', 'Icône (mdi)');
+        this._text('header.badge', 'Badge', 'optionnel — étiquette courte à côté du titre, ex: AUTO');
+        this._group('Typographie', false, () => {
+          this._text('header.title_size', 'Taille titre', '16px');
+          this._select('header.font', 'Police', NEON_FONTS, '— thème HA —');
+          this._text('header.font_weight', 'Épaisseur', '400');
+          this._text('header.letter_spacing', 'Espacement', 'clamp(1px, 0.5cqi, 3px)');
+          this._toggle('header.uppercase', 'Majuscules', true);
+          this._toggle('header.italic', 'Italique', false);
+          this._color('header.color', 'Couleur titre', 'var(--primary-color)', 'défaut : couleur primaire — ex rgb(var(--rgb-lavande))');
+          this._color('header.icon_color', "Couleur de l'icône", 'défaut : couleur du titre');
+          this._text('header.icon_size', "Taille de l'icône", 'défaut : taille du titre');
+        });
+        this._group('Glow & gradient', false, () => {
+          this._toggle('header.glow', 'Glow du titre');
+          this._text('header.glow_size', 'Taille du glow', '12');
+          this._color('header.glow_color', 'Couleur du glow', 'var(--primary-color)');
+          this._toggle('header.gradient', 'Titre en dégradé');
+          this._color('header.gradient_from', 'Dégradé — départ', 'var(--primary-color)');
+          this._color('header.gradient_to', 'Dégradé — arrivée', 'var(--accent-color)');
+          this._text('header.title_shadow', 'Text-shadow', '0 0 6px ...');
+          this._toggle('header.flicker', 'Scintillement du titre');
+          this._hint('Mêmes réglages que la neon-entities-card. Text-shadow, si renseigné, remplace le glow.');
+        });
+      });
+
+      this._group('Capteurs', false, () => {
+        this._entity('humidity_entity', 'Entité humidité', 'sensor');
+        this._hint("Facultatif — sinon current_humidity de l'entité climate");
+        this._entity('power_entity', 'Entité puissance', 'sensor');
+        this._hint("Facultatif — anime le flux d'air seulement si puissance ≥ seuil (sinon basé sur le mode seul)");
+        this._text('power_threshold', 'Seuil puissance (W)', '10');
+        this._toggle('show_wind', 'Animation air', true);
+      });
+
+      this._group('Flux d\'air (WebGL)', false, () => {
+        this._select('flow_quality', 'Qualité', [
+          ['auto',  'Auto — léger sur écran dense (recommandé)'],
+          ['full',  'Complet — canvas jusqu\'à 2×'],
+          ['light', 'Léger — canvas 1×, moins gourmand'],
+          ['off',   'Désactivé — aucune animation'],
+        ], 'auto', 'Sur mobile (écran dense), « léger » rend le flux PLUS visible et ~7× moins coûteux : ' +
+                   'à 2× la même matière est diluée sur 4× plus de pixels. L\'animation se met aussi en ' +
+                   'veille dès que la card sort de l\'écran.');
+        this._group('Réglages fins du flux (19 paramètres)', false, () => {
+          this._hint('Double-clic sur une valeur pour revenir au défaut.');
+          FLOW_META.forEach(([k, min, max, step, dec, note]) => {
+            this._slider('flow_' + k, k, min, max, step, dec, FLOW_DEFAULTS[k], note);
+          });
+        });
+      });
+
+      this._group('Couleurs', false, () => {
+        this._group('Boutons mode', false, () => {
+          this._color('color_off', 'OFF', MODE_DEFAULTS.off);
+          this._color('color_heat', 'HEAT', MODE_DEFAULTS.heat);
+          this._color('color_cool', 'COOL', MODE_DEFAULTS.cool);
+          this._color('color_dry', 'DRY', MODE_DEFAULTS.dry);
+          this._color('color_fan', 'FAN ONLY', MODE_DEFAULTS.fan_only);
+          this._color('color_fan_btn', 'FAN (bouton cycle)', '#00FFAA');
+        });
+        this._group('Réglette de consigne', false, () => {
+          this._hint('Double-clic sur une valeur pour revenir au défaut.');
+          this._slider('knob_size',   'Taille du bouton (px)',   20, 48, 1,    0, KNOB_DEFAULTS.knob_size);
+          this._slider('knob_wave',   'Onde au relâché (×)',     1.2, 4, 0.1,  1, KNOB_DEFAULTS.knob_wave);
+          this._slider('hotel_glow',  'Halo',                    0, 1.5, 0.05, 2, KNOB_DEFAULTS.hotel_glow);
+          this._slider('hotel_ticks', 'Graduations (opacité)',   0, 1, 0.05,   2, KNOB_DEFAULTS.hotel_ticks);
+          this._color('hotel_cold', 'Bout froid (16°)', KNOB_DEFAULTS.hotel_cold);
+          this._color('hotel_hot',  'Bout chaud (26° et MAX)', KNOB_DEFAULTS.hotel_hot);
+          this._color('color_pill', 'Pilule (entités à 2 consignes)', PILL_DEFAULT);
+        });
+        this._group('Display AC', false, () => {
+          this._color('color_display', 'Dot-matrix / display', '#00fff9');
+          this._toggle('neon_display_glow', 'Triple neon glow', true);
+        });
+        this._group('Boutons machine (ventilation / volet)', false, () => {
+          this._hint('Gaz rares & radiations — la teinte monte avec le réglage');
+          this._color('color_fan_lo',   'Ventilation — mini',  COLOR_DEFAULTS.color_fan_lo);
+          this._color('color_fan_hi',   'Ventilation — maxi',  COLOR_DEFAULTS.color_fan_hi);
+          this._color('color_swing_lo', 'Volet — fermé',       COLOR_DEFAULTS.color_swing_lo);
+          this._color('color_swing_hi', 'Volet — grand ouvert', COLOR_DEFAULTS.color_swing_hi);
         });
       });
     }
@@ -3022,7 +3115,7 @@ const _setLang = (h, o) => {   // o = instance (card/éditeur) : true tant que L
       this._target = prevTarget;
       return panel;
     }
-    _hint(t) { const d = document.createElement('div'); d.className = 'hint'; (this._target || this).appendChild(d); return d; }
+    _hint(t) { const d = document.createElement('div'); d.className = 'hint'; d.textContent = _t(t); (this._target || this).appendChild(d); return d; }
     _text(key, label, ph = '') {
       const w = this._row(_t(label)).wrap;
       const inp = document.createElement('input');
@@ -3125,15 +3218,18 @@ const _setLang = (h, o) => {   // o = instance (card/éditeur) : true tant que L
     _css() {
       return `
         :host { display:block; padding:14px; font-family:var(--primary-font-family,Roboto,sans-serif); }
-        .sec { font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--primary-color);margin:16px 0 6px;padding-bottom:4px;border-bottom:1px solid var(--divider-color); }
+        neon-climate-card-webgl-editor { --ned-label:color-mix(in srgb,var(--primary-text-color) 82%,transparent); --ned-dim:color-mix(in srgb,var(--primary-text-color) 60%,transparent);
+          --ned-accent:color-mix(in srgb,var(--primary-color) 55%,var(--primary-text-color)); --ned-line:color-mix(in srgb,var(--primary-color) 55%,transparent); }
+        neon-climate-card-webgl-editor ha-expansion-panel { --outline-color:var(--ned-line); --expansion-panel-summary-padding:0 12px; color:var(--primary-text-color); }
+        .sec { font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--ned-accent);margin:16px 0 6px;padding-bottom:4px;border-bottom:1px solid var(--ned-line); }
         .sec:first-child { margin-top:0; }
         ha-expansion-panel { display:block; margin:8px 0; --expansion-panel-content-padding:8px 12px 12px; }
         ha-expansion-panel .row:first-child { margin-top:2px; }
         .row { display:flex;align-items:center;gap:8px;margin-bottom:6px; }
-        .row label { flex:0 0 160px;font-size:12px;color:var(--secondary-text-color); }
-        .row label .mdi-link { color:var(--primary-color);font-size:9px;text-transform:none;letter-spacing:0; }
+        .row label { flex:0 0 160px;font-size:12px;color:var(--ned-label); }
+        .row label .mdi-link { color:var(--ned-accent);font-size:9px;text-transform:none;letter-spacing:0; }
         .field-wrap { flex:1;min-width:0;display:flex; }
-        input[type=text],input[type=number],select { flex:1;width:100%;padding:4px 8px;border:1px solid var(--divider-color);border-radius:4px;background:var(--card-background-color);color:var(--primary-text-color);font-size:12px;outline:none;box-sizing:border-box; }
+        input[type=text],input[type=number],select { flex:1;width:100%;padding:4px 8px;border:1px solid var(--ned-line);border-radius:4px;background:var(--card-background-color);color:var(--primary-text-color);font-size:12px;outline:none;box-sizing:border-box; }
         select { cursor:pointer; }
         input:focus,select:focus { box-shadow:0 0 0 1px var(--primary-color); }
         .color-row { display:flex;gap:8px;flex:1; }
@@ -3141,8 +3237,8 @@ const _setLang = (h, o) => {   // o = instance (card/éditeur) : true tant que L
         .color-row input[type=color] { width:36px;height:28px;flex:none;padding:0;border:none;background:none;border-radius:4px;cursor:pointer; }
         .icon-row { display:flex;gap:8px;flex:1;align-items:center; }
         .icon-row input { flex:1; }
-        .icon-preview { width:30px;height:28px;flex:none;display:flex;align-items:center;justify-content:center;border:1px solid var(--divider-color);border-radius:4px;color:var(--primary-text-color); }
-        .hint { font-size:11px;color:var(--secondary-text-color);font-style:italic;margin:-2px 0 6px 168px; }
+        .icon-preview { width:30px;height:28px;flex:none;display:flex;align-items:center;justify-content:center;border:1px solid var(--ned-line);border-radius:4px;color:var(--primary-text-color); }
+        .hint { font-size:11px;color:var(--ned-dim);font-style:italic;margin:-2px 0 6px 168px; }
       `;
     }
     _render() {
@@ -3152,75 +3248,6 @@ const _setLang = (h, o) => {   // o = instance (card/éditeur) : true tant que L
       this._schema();
       this._fillDatalists();
       this._bindIconPreviews();
-    }
-    _schemaBase() {
-      this._section('En-tête');
-      this._text('header.title', 'Titre', 'ex: Climatisation');
-      this._icon('header.icon', 'Icône (mdi)');
-      this._color('header.color', 'Couleur titre', 'var(--primary-color)', 'défaut : couleur primaire — ex rgb(var(--rgb-lavande))');
-      this._text('header.title_size', 'Taille titre', '16px');
-      this._select('header.font', 'Police', NEON_FONTS, '— thème HA —');
-      this._toggle('header.uppercase', 'Majuscules', true);
-
-      this._group('Effets avancés du titre', false, () => {
-        this._text('header.subtitle', 'Sous-titre', 'optionnel — texte sous le titre');
-        this._text('header.badge', 'Badge', 'optionnel — étiquette courte à côté du titre, ex: AUTO');
-        this._text('header.font_weight', 'Épaisseur', '400');
-        this._text('header.letter_spacing', 'Espacement', 'clamp(1px, 0.5cqi, 3px)');
-        this._toggle('header.italic', 'Italique', false);
-        this._text('header.title_shadow', 'Text-shadow', '0 0 6px ...');
-        this._toggle('header.gradient', 'Titre en dégradé');
-        this._color('header.gradient_from', 'Dégradé — départ', 'var(--primary-color)');
-        this._color('header.gradient_to', 'Dégradé — arrivée', 'var(--accent-color)');
-        this._toggle('header.glow', 'Glow du titre');
-        this._text('header.glow_size', 'Taille du glow', '12');
-        this._color('header.glow_color', 'Couleur du glow', 'var(--primary-color)');
-        this._toggle('header.flicker', 'Scintillement du titre');
-        this._color('header.icon_color', "Couleur de l'icône", 'défaut : couleur du titre');
-        this._text('header.icon_size', "Taille de l'icône", 'défaut : taille du titre');
-        this._hint('Mêmes réglages que la neon-entities-card. Text-shadow, si renseigné, remplace le glow.');
-      });
-
-      this._section('Entité, capteurs & options');
-      this._entity('entity', 'Entité climate *', 'climate');
-      this._text('name', 'Nom affiché', 'Vide = friendly_name');
-      this._entity('humidity_entity', 'Entité humidité', 'sensor');
-      this._hint("Facultatif — sinon current_humidity de l'entité climate");
-      this._entity('power_entity', 'Entité puissance', 'sensor');
-      this._hint("Facultatif — anime le flux d'air seulement si puissance ≥ seuil (sinon basé sur le mode seul)");
-      this._toggle('show_wind', 'Animation air', true);
-      this._text('power_threshold', 'Seuil puissance (W)', '10');
-
-      this._section('Couleurs');
-      this._group('Boutons mode', false, () => {
-        this._color('color_off', 'OFF', MODE_DEFAULTS.off);
-        this._color('color_heat', 'HEAT', MODE_DEFAULTS.heat);
-        this._color('color_cool', 'COOL', MODE_DEFAULTS.cool);
-        this._color('color_dry', 'DRY', MODE_DEFAULTS.dry);
-        this._color('color_fan', 'FAN ONLY', MODE_DEFAULTS.fan_only);
-        this._color('color_fan_btn', 'FAN (bouton cycle)', '#00FFAA');
-      });
-      this._group('Réglette de consigne', false, () => {
-        this._hint('Double-clic sur une valeur pour revenir au défaut.');
-        this._slider('knob_size',   'Taille du bouton (px)',   20, 48, 1,    0, KNOB_DEFAULTS.knob_size);
-        this._slider('knob_wave',   'Onde au relâché (×)',     1.2, 4, 0.1,  1, KNOB_DEFAULTS.knob_wave);
-        this._slider('hotel_glow',  'Halo',                    0, 1.5, 0.05, 2, KNOB_DEFAULTS.hotel_glow);
-        this._slider('hotel_ticks', 'Graduations (opacité)',   0, 1, 0.05,   2, KNOB_DEFAULTS.hotel_ticks);
-        this._color('hotel_cold', 'Bout froid (16°)', KNOB_DEFAULTS.hotel_cold);
-        this._color('hotel_hot',  'Bout chaud (26° et MAX)', KNOB_DEFAULTS.hotel_hot);
-        this._color('color_pill', 'Pilule (entités à 2 consignes)', PILL_DEFAULT);
-      });
-      this._group('Display AC', false, () => {
-        this._color('color_display', 'Dot-matrix / display', '#00fff9');
-        this._toggle('neon_display_glow', 'Triple neon glow', true);
-      });
-      this._group('Boutons machine (ventilation / volet)', false, () => {
-        this._hint('Gaz rares & radiations — la teinte monte avec le réglage');
-        this._color('color_fan_lo',   'Ventilation — mini',  COLOR_DEFAULTS.color_fan_lo);
-        this._color('color_fan_hi',   'Ventilation — maxi',  COLOR_DEFAULTS.color_fan_hi);
-        this._color('color_swing_lo', 'Volet — fermé',       COLOR_DEFAULTS.color_swing_lo);
-        this._color('color_swing_hi', 'Volet — grand ouvert', COLOR_DEFAULTS.color_swing_hi);
-      });
     }
   }
 

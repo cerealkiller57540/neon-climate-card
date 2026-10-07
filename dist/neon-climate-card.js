@@ -61,6 +61,8 @@ function rgba(hex, a) { const c = hexRgb(hex); return `rgba(${c.r},${c.g},${c.b}
 /* ── i18n FR/EN : la clé est la chaîne française (le français s'affiche tel quel) ── */
 let _lang = /^fr/i.test(document.documentElement.lang || '') ? 'fr' : 'en';   // HA pose <html lang> ; hass.language fait foi ensuite
 const _EN = {
+ "Typographie": "Typography",
+ "Glow & gradient": "Glow & gradient",
  "'entity' requis": "'entity' is required",
  "Animation air": "Air animation",
  "Augmenter": "Increase",
@@ -1288,8 +1290,22 @@ class NeonClimateCardEditor extends HTMLElement {
   }
 
   // ── Helpers de champ (signatures FIXES) ────────────────────────────
-  _section(t) { const d = document.createElement('div'); d.className = 'sec'; d.textContent = _t(t); this.appendChild(d); return d; }
-  _hint(t)    { const d = document.createElement('div'); d.className = 'hint'; d.textContent = _t(t); this.appendChild(d); return d; }
+  _section(t) { const d = document.createElement('div'); d.className = 'sec'; d.textContent = _t(t); (this._appendTo || this).appendChild(d); return d; }
+  // Groupe repliable : buildFn() appelle les helpers, qui s'appendent DEDANS via _appendTo.
+  // L'état ouvert/fermé reste local au panneau (jamais dans _config).
+  _group(title, expanded, buildFn) {
+    const panel = document.createElement('ha-expansion-panel');
+    panel.outlined = true;
+    panel.header = _t(title);
+    if (expanded) panel.expanded = true;
+    (this._appendTo || this).appendChild(panel);
+    const prevAppendTo = this._appendTo;
+    this._appendTo = panel;
+    buildFn();
+    this._appendTo = prevAppendTo;
+    return panel;
+  }
+  _hint(t)    { const d = document.createElement('div'); d.className = 'hint'; d.textContent = _t(t); (this._appendTo || this).appendChild(d); return d; }
 
   _text(key, label, ph = '') {
     const w = this._row(_t(label)).wrap;
@@ -1384,7 +1400,7 @@ class NeonClimateCardEditor extends HTMLElement {
     const lbl = document.createElement('label');
     if (isHtml) lbl.innerHTML = labelHtml; else lbl.textContent = labelHtml;
     const wrap = document.createElement('div'); wrap.className = 'field-wrap';
-    row.appendChild(lbl); row.appendChild(wrap); this.appendChild(row);
+    row.appendChild(lbl); row.appendChild(wrap); (this._appendTo || this).appendChild(row);
     return { row, wrap };
   }
 
@@ -1430,14 +1446,25 @@ class NeonClimateCardEditor extends HTMLElement {
 
   _css() {
     return `
+      neon-climate-card-editor {
+        --ned-label: color-mix(in srgb, var(--primary-text-color) 82%, transparent);
+        --ned-dim: color-mix(in srgb, var(--primary-text-color) 60%, transparent);
+        --ned-accent: color-mix(in srgb, var(--primary-color) 55%, var(--primary-text-color));
+        --ned-line: color-mix(in srgb, var(--primary-color) 55%, transparent);
+      }
+      neon-climate-card-editor ha-expansion-panel {
+        --outline-color: var(--ned-line);
+        --expansion-panel-summary-padding: 0 12px;
+        color: var(--primary-text-color);
+      }
       :host { display:block; padding:14px; font-family:var(--primary-font-family,Roboto,sans-serif); }
-      .sec { font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--primary-color);margin:16px 0 6px;padding-bottom:4px;border-bottom:1px solid var(--divider-color); }
+      .sec { font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--ned-accent);margin:16px 0 6px;padding-bottom:4px;border-bottom:1px solid var(--divider-color); }
       .sec:first-child { margin-top:0; }
       .row { display:flex;align-items:center;gap:8px;margin-bottom:6px; }
-      .row label { flex:0 0 160px;font-size:12px;color:var(--secondary-text-color); }
-      .row label .mdi-link { color:var(--primary-color);font-size:9px;text-transform:none;letter-spacing:0; }
+      .row label { flex:0 0 160px;font-size:12px;color:var(--ned-label); }
+      .row label .mdi-link { color:var(--ned-accent);font-size:9px;text-transform:none;letter-spacing:0; }
       .field-wrap { flex:1;min-width:0;display:flex; }
-      input[type=text],input[type=number],select { flex:1;width:100%;padding:4px 8px;border:1px solid var(--divider-color);border-radius:4px;background:var(--card-background-color);color:var(--primary-text-color);font-size:12px;outline:none;box-sizing:border-box; }
+      input[type=text],input[type=number],select { flex:1;width:100%;padding:4px 8px;border:1px solid var(--ned-line);border-radius:4px;background:var(--card-background-color);color:var(--primary-text-color);font-size:12px;outline:none;box-sizing:border-box; }
       select { cursor:pointer; }
       input:focus,select:focus { box-shadow:0 0 0 1px var(--primary-color); }
       .color-row { display:flex;gap:8px;flex:1; }
@@ -1445,8 +1472,8 @@ class NeonClimateCardEditor extends HTMLElement {
       .color-row input[type=color] { width:36px;height:28px;flex:none;padding:0;border:none;background:none;border-radius:4px;cursor:pointer; }
       .icon-row { display:flex;gap:8px;flex:1;align-items:center; }
       .icon-row input { flex:1; }
-      .icon-preview { width:30px;height:28px;flex:none;display:flex;align-items:center;justify-content:center;border:1px solid var(--divider-color);border-radius:4px;color:var(--primary-text-color); }
-      .hint { font-size:11px;color:var(--secondary-text-color);font-style:italic;margin:-2px 0 6px 168px; }
+      .icon-preview { width:30px;height:28px;flex:none;display:flex;align-items:center;justify-content:center;border:1px solid var(--ned-line);border-radius:4px;color:var(--primary-text-color); }
+      .hint { font-size:11px;color:var(--ned-dim);font-style:italic;margin:-2px 0 6px 168px; }
     `;
   }
 
@@ -1462,59 +1489,62 @@ class NeonClimateCardEditor extends HTMLElement {
   // ║  SCHÉMA — LA SEULE PARTIE SPÉCIFIQUE À LA CARD                  ║
   // ╚════════════════════════════════════════════════════════════════╝
   _schema() {
-    this._section('En-tête');
-    this._text('header.title', 'Titre', 'ex: Climatisation');
-    this._text('header.subtitle', 'Sous-titre', 'optionnel');
-    this._icon('header.icon', 'Icône (mdi)');
-    this._select('header.icon_position', 'Position icône', [
-      ['left', 'Gauche'], ['right', 'Droite'], ['top', 'Dessus'],
-    ]);
-    this._text('header.title_size', 'Taille titre', 'clamp(8px, 2vw, 11px)');
-    this._select('header.font', 'Police', NEON_FONTS, '— thème HA —');
-    this._number('header.font_weight', 'Épaisseur', { min: 100, max: 900, step: 100, ph: '600' });
-    this._text('header.letter_spacing', 'Espacement', '0.02em');
-    this._toggle('header.uppercase', 'Majuscules', true);
-    this._toggle('header.italic', 'Italique', false);
-    this._color('header.color', 'Couleur titre', 'var(--primary-color)', 'défaut : couleur primaire — ex rgb(var(--rgb-lavande))');
-    this._color('header.icon_color', 'Couleur icône', null, 'défaut : blanc cassé');
-    this._toggle('header.glow', 'Glow icône + titre', false);
-    this._color('header.glow_color', 'Couleur glow', 'var(--primary-color, #00E8FF)');
-    this._number('header.glow_size', 'Taille glow', { min: 2, max: 30, step: 1, ph: '12' });
-    this._number('header.icon_size', 'Taille icône (px)', { min: 10, max: 48, step: 1, ph: '18' });
-    this._toggle('header.gradient', 'Gradient titre', false);
-    this._color('header.gradient_from', 'Gradient début', 'var(--primary-color, #00E8FF)');
-    this._color('header.gradient_to', 'Gradient fin', 'var(--accent-color, #FF50A0)');
-    this._text('header.badge', 'Badge', 'optionnel');
-    this._text('header.title_shadow', 'Text-shadow (override manuel, prioritaire sur glow)', 'optionnel');
-
     this._section('Entité principale');
     this._entity('entity', 'Entité climate *', 'climate');
     this._text('name', 'Nom affiché', 'Vide = friendly_name');
 
-    this._section('Capteurs');
-    this._entity('humidity_entity', 'Entité humidité', 'sensor');
-    this._hint("Facultatif — sinon current_humidity de l'entité climate");
-    this._entity('power_entity', 'Entité puissance', 'sensor');
-    this._hint("Facultatif — anime le flux d'air seulement si puissance ≥ seuil (sinon basé sur le mode seul)");
+    this._group('En-tête', false, () => {
+      this._text('header.title', 'Titre', 'ex: Climatisation');
+      this._text('header.subtitle', 'Sous-titre', 'optionnel');
+      this._icon('header.icon', 'Icône (mdi)');
+      this._select('header.icon_position', 'Position icône', [
+        ['left', 'Gauche'], ['right', 'Droite'], ['top', 'Dessus'],
+      ]);
+      this._number('header.icon_size', 'Taille icône (px)', { min: 10, max: 48, step: 1, ph: '18' });
+      this._text('header.badge', 'Badge', 'optionnel');
+      this._group('Typographie', false, () => {
+        this._text('header.title_size', 'Taille titre', 'clamp(8px, 2vw, 11px)');
+        this._select('header.font', 'Police', NEON_FONTS, '— thème HA —');
+        this._number('header.font_weight', 'Épaisseur', { min: 100, max: 900, step: 100, ph: '600' });
+        this._text('header.letter_spacing', 'Espacement', '0.02em');
+        this._toggle('header.uppercase', 'Majuscules', true);
+        this._toggle('header.italic', 'Italique', false);
+        this._color('header.color', 'Couleur titre', 'var(--primary-color)', 'défaut : couleur primaire — ex rgb(var(--rgb-lavande))');
+        this._color('header.icon_color', 'Couleur icône', null, 'défaut : blanc cassé');
+      });
+      this._group('Glow & gradient', false, () => {
+        this._toggle('header.glow', 'Glow icône + titre', false);
+        this._color('header.glow_color', 'Couleur glow', 'var(--primary-color, #00E8FF)');
+        this._number('header.glow_size', 'Taille glow', { min: 2, max: 30, step: 1, ph: '12' });
+        this._toggle('header.gradient', 'Gradient titre', false);
+        this._color('header.gradient_from', 'Gradient début', 'var(--primary-color, #00E8FF)');
+        this._color('header.gradient_to', 'Gradient fin', 'var(--accent-color, #FF50A0)');
+        this._text('header.title_shadow', 'Text-shadow (override manuel, prioritaire sur glow)', 'optionnel');
+      });
+    });
 
-    this._section('Couleurs boutons mode');
-    this._color('color_off', 'OFF', MODE_DEFAULTS.off);
-    this._color('color_heat', 'HEAT', MODE_DEFAULTS.heat);
-    this._color('color_cool', 'COOL', MODE_DEFAULTS.cool);
-    this._color('color_dry', 'DRY', MODE_DEFAULTS.dry);
-    this._color('color_fan', 'FAN ONLY', MODE_DEFAULTS.fan_only);
-    this._color('color_fan_btn', 'FAN (bouton cycle)', '#00FFAA');
+    this._group('Capteurs', false, () => {
+      this._entity('humidity_entity', 'Entité humidité', 'sensor');
+      this._hint("Facultatif — sinon current_humidity de l'entité climate");
+      this._entity('power_entity', 'Entité puissance', 'sensor');
+      this._hint("Facultatif — anime le flux d'air seulement si puissance ≥ seuil (sinon basé sur le mode seul)");
+      this._text('power_threshold', 'Seuil puissance (W)', '10');
+      this._toggle('show_wind', 'Animation air', true);
+    });
 
-    this._section('Couleur pill température');
-    this._color('color_pill', 'Pill cible', PILL_DEFAULT);
-
-    this._section('Couleur display AC');
-    this._color('color_display', 'Dot-matrix / display', '#00fff9');
-    this._toggle('neon_display_glow', 'Triple neon glow', true);
-
-    this._section('Options');
-    this._toggle('show_wind', 'Animation air', true);
-    this._text('power_threshold', 'Seuil puissance (W)', '10');
+    this._group('Couleurs', false, () => {
+      this._color('color_pill', 'Pill cible', PILL_DEFAULT);
+      this._color('color_display', 'Dot-matrix / display', '#00fff9');
+      this._toggle('neon_display_glow', 'Triple neon glow', true);
+      this._group('Boutons mode', false, () => {
+        this._color('color_off', 'OFF', MODE_DEFAULTS.off);
+        this._color('color_heat', 'HEAT', MODE_DEFAULTS.heat);
+        this._color('color_cool', 'COOL', MODE_DEFAULTS.cool);
+        this._color('color_dry', 'DRY', MODE_DEFAULTS.dry);
+        this._color('color_fan', 'FAN ONLY', MODE_DEFAULTS.fan_only);
+        this._color('color_fan_btn', 'FAN (bouton cycle)', '#00FFAA');
+      });
+    });
   }
 }
 
@@ -1529,7 +1559,7 @@ window.customCards.push({
   preview: true,
 });
 
-console.info('%c NEON-CLIMATE-CARD %c v1.3.1 ','color:#00fff9;font-weight:bold;background:#040816','color:#fff;background:#444');
+console.info('%c NEON-CLIMATE-CARD %c v1.8.0 ','color:#00fff9;font-weight:bold;background:#040816','color:#fff;background:#444');
 
 console.info(
   '%c ❄️ neon-climate-card v1.3.1 %c Neo Tokyo ',
