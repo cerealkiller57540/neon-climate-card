@@ -1,6 +1,6 @@
 /**
  * Neon Climate Card — Neo Tokyo v2
- * @version 1.3.1
+ * @version 1.8.2
  * Nouveautés : flux d'air gaté par puissance réelle (power_entity/power_threshold)
  * Nouveautés : couleurs boutons/pill configurables, glitch sur changement temp/humid
 	Ligne 502 — le levier global : brightness(2.0) dans le filtre CSS du canvas. Monte à 2.5–3 pour opacifier tout le flux d'un coup (nappes + volutes + particules), c'est le réglage le plus simple.
@@ -1559,10 +1559,10 @@ window.customCards.push({
   preview: true,
 });
 
-console.info('%c NEON-CLIMATE-CARD %c v1.8.0 ','color:#00fff9;font-weight:bold;background:#040816','color:#fff;background:#444');
+console.info('%c NEON-CLIMATE-CARD %c v1.8.2 ','color:#00fff9;font-weight:bold;background:#040816','color:#fff;background:#444');
 
 console.info(
-  '%c ❄️ neon-climate-card v1.3.1 %c Neo Tokyo ',
+  '%c ❄️ neon-climate-card v1.8.2 %c Neo Tokyo ',
   'background:#00D4FF;color:#000;padding:2px 4px;border-radius:3px 0 0 3px;font-weight:bold;',
   'background:#040811;color:#9D4EDD;padding:2px 4px;border-radius:0 3px 3px 0;'
 );
