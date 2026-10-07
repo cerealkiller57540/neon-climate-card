@@ -1,4 +1,4 @@
-/* ── neon-climate-card-webgl v1.7.2 ────────────────────────────────────────────
+/* ── neon-climate-card-webgl v1.7.3 ────────────────────────────────────────────
  * Variante WEBGL de neon-climate-card : le souffle sous la grille n'est plus une
  * animation 2D scriptée mais un vrai fluide (Navier-Stokes stable, lignée Stam /
  * PavelDoGreat) rendu par shaders. Chaque fente de la grille est un jet à part
@@ -51,7 +51,7 @@
     'DM Sans','Playfair Display','Cinzel',
   ];
 
-  const CARD_VERSION = '1.7.2';
+  const CARD_VERSION = '1.7.3';
 
   /* Défauts ajustés visuellement : ce sont eux la référence (les valeurs
    * théoriques donnaient un panache anémique). */
@@ -864,7 +864,7 @@ const _EN = {
  "Dot-matrix / display": "Dot-matrix / display",
  "Double-clic : revenir au défaut": "Double-click: back to default",
  "Droite": "Right",
- "Défauts = réglages validés au banc. Double-clic sur une valeur pour y revenir.": "Defaults = settings validated on the test bench. Double-click a value to reset it.",
+ "Double-clic sur une valeur pour revenir au défaut.": "Double-click a value to reset it to its default.",
  "Dégradé — arrivée": "Gradient — to",
  "Dégradé — départ": "Gradient — from",
  "Désactivé — aucune animation": "Off — no animation",
@@ -954,8 +954,8 @@ const _setLang = (h, o) => {   // o = instance (card/éditeur) : true tant que L
   class NeonClimateCardWebgl extends HTMLElement {
 
     /* Nos clés : les 19 flow_* et les 4 couleurs. Chaque flow_* est lu en nombre
-     * — l'éditeur et le YAML rendent des chaînes — et retombe sur le défaut du
-     * banc si absent ou illisible.
+     * — l'éditeur et le YAML rendent des chaînes — et retombe sur le défaut
+     * si absent ou illisible.
      *
      * ORDRE CRITIQUE : this._setConfigBase() appelle _build(), qui appelle
      * _applyColors() → _applySkin() → _flowParams(). Tout doit donc être posé
@@ -2842,7 +2842,7 @@ const _setLang = (h, o) => {   // o = instance (card/éditeur) : true tant que L
    * qui est justement « LA SEULE PARTIE SPÉCIFIQUE À LA CARD » d'après la prod, et
    * on ajoute _slider — la prod n'avait aucun champ numérique.        */
 
-  /* Métadonnées des 19 réglages, reprises du banc : bornes, pas, et la note qui
+  /* Métadonnées des 19 réglages : bornes, pas, et la note qui
    * dit à quoi sert le curseur. Sans elles l'éditeur afficherait 19 champs
    * numériques anonymes. */
   const FLOW_META = [
@@ -2942,7 +2942,7 @@ const _setLang = (h, o) => {   // o = instance (card/éditeur) : true tant que L
                  'à 2× la même matière est diluée sur 4× plus de pixels. L\'animation se met aussi en ' +
                  'veille dès que la card sort de l\'écran.');
       this._group('Réglages fins du flux (19 paramètres)', false, () => {
-        this._hint('Défauts = réglages validés au banc. Double-clic sur une valeur pour y revenir.');
+        this._hint('Double-clic sur une valeur pour revenir au défaut.');
         FLOW_META.forEach(([k, min, max, step, dec, note]) => {
           this._slider('flow_' + k, k, min, max, step, dec, FLOW_DEFAULTS[k], note);
         });
@@ -3201,7 +3201,7 @@ const _setLang = (h, o) => {   // o = instance (card/éditeur) : true tant que L
         this._color('color_fan_btn', 'FAN (bouton cycle)', '#00FFAA');
       });
       this._group('Réglette de consigne', false, () => {
-        this._hint('Défauts = réglages validés au banc. Double-clic sur une valeur pour y revenir.');
+        this._hint('Double-clic sur une valeur pour revenir au défaut.');
         this._slider('knob_size',   'Taille du bouton (px)',   20, 48, 1,    0, KNOB_DEFAULTS.knob_size);
         this._slider('knob_wave',   'Onde au relâché (×)',     1.2, 4, 0.1,  1, KNOB_DEFAULTS.knob_wave);
         this._slider('hotel_glow',  'Halo',                    0, 1.5, 0.05, 2, KNOB_DEFAULTS.hotel_glow);

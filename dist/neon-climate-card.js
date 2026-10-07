@@ -88,7 +88,7 @@ const _EN = {
  "Dot-matrix / display": "Dot-matrix / display",
  "Double-clic : revenir au défaut": "Double-click: back to default",
  "Droite": "Right",
- "Défauts = réglages validés au banc. Double-clic sur une valeur pour y revenir.": "Defaults = settings validated on the test bench. Double-click a value to reset it.",
+ "Double-clic sur une valeur pour revenir au défaut.": "Double-click a value to reset it to its default.",
  "Dégradé — arrivée": "Gradient — to",
  "Dégradé — départ": "Gradient — from",
  "Désactivé — aucune animation": "Off — no animation",
@@ -1296,6 +1296,16 @@ class NeonClimateCardEditor extends HTMLElement {
     const inp = document.createElement('input');
     inp.type = 'text'; inp.placeholder = _t(ph); inp.dataset.key = key; inp.value = this._read(key) ?? '';
     inp.addEventListener('input', () => this._set(key, inp.value));
+    w.appendChild(inp); return inp;
+  }
+
+  _number(key, label, { min, max, step = 1, ph = '' } = {}) {
+    const w = this._row(_t(label)).wrap;
+    const inp = document.createElement('input');
+    inp.type = 'number'; if (min != null) inp.min = min; if (max != null) inp.max = max;
+    inp.step = step; inp.placeholder = ph; inp.dataset.key = key;
+    inp.value = this._read(key) ?? '';
+    inp.addEventListener('input', () => { const n = parseFloat(inp.value); this._set(key, isNaN(n) ? undefined : n); });
     w.appendChild(inp); return inp;
   }
 
