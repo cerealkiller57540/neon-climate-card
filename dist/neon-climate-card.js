@@ -88,7 +88,6 @@ const _EN = {
  "Dot-matrix / display": "Dot-matrix / display",
  "Double-clic : revenir au défaut": "Double-click: back to default",
  "Droite": "Right",
- "Défauts = réglages validés au banc (27/09/2026). Double-clic sur une valeur pour y revenir.": "Defaults = settings validated on the test bench. Double-click a value to reset it.",
  "Défauts = réglages validés au banc. Double-clic sur une valeur pour y revenir.": "Defaults = settings validated on the test bench. Double-click a value to reset it.",
  "Dégradé — arrivée": "Gradient — to",
  "Dégradé — départ": "Gradient — from",

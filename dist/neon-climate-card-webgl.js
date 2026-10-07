@@ -1,4 +1,4 @@
-/* ── neon-climate-card-webgl v1.7.1 ────────────────────────────────────────────
+/* ── neon-climate-card-webgl v1.7.2 ────────────────────────────────────────────
  * Variante WEBGL de neon-climate-card : le souffle sous la grille n'est plus une
  * animation 2D scriptée mais un vrai fluide (Navier-Stokes stable, lignée Stam /
  * PavelDoGreat) rendu par shaders. Chaque fente de la grille est un jet à part
@@ -23,7 +23,7 @@
  *     radiations » de Neo Tokyo, et cette teinte MONTE avec le réglage.
  *
  * Réglages : 19 clés flow_* + 4 couleurs, toutes exposées dans l'éditeur UI.
- * Les défauts sont ceux validés au banc, pas les valeurs théoriques.
+ * Les défauts sont des valeurs ajustées visuellement, pas des valeurs théoriques.
  *
  * Prérequis : la ressource /local/neon-climate-card.js doit être chargée AVANT
  * celle-ci (elle définit la classe de base).
@@ -51,11 +51,10 @@
     'DM Sans','Playfair Display','Cinzel',
   ];
 
-  const CARD_VERSION = '1.7.1';
+  const CARD_VERSION = '1.7.2';
 
-  /* Défauts validés au banc (climate_flow_v2.html). Ce sont EUX la référence :
-   * les valeurs "théoriques" de la v1 avaient été calibrées sur une géométrie
-   * fausse et rendaient un panache anémique. */
+  /* Défauts ajustés visuellement : ce sont eux la référence (les valeurs
+   * théoriques donnaient un panache anémique). */
   const FLOW_DEFAULTS = {
     count: 5,          // nombre de fentes — un faisceau par fente
     fan: 21,           // évasement total en degrés
@@ -89,8 +88,8 @@
     color_swing_hi: '#9D00FF',  // plasma-void     — violet réacteur
   };
 
-  /* Réglette de consigne « Neon-Knob ». Valeurs réglées à l'œil par l'auteur au
-   * banc (banc_clim.html, variante D, 27/09/2026) : ne pas les rechoisir au jugé. */
+  /* Réglette de consigne « Neon-Knob ». Constantes ajustées visuellement :
+   * ne pas les modifier sans revérifier le rendu. */
   const KNOB_DEFAULTS = {
     hotel_glow:  0.6,        // halo de la fibre et du bouton
     hotel_ticks: 0.45,       // opacité des graduations
@@ -385,7 +384,7 @@
        * seul type de contexte a vie, donc on ne peut pas essayer webgl2 dessus
        * puis se rabattre sur webgl. On sonde sur un canvas jetable.
        *
-       * Vecu (WebView de l'app HA, Pixel 9a / Mali-G715, Chrome 150) : WebGL 1
+       * WebView de l'app HA (Mali-G715, Chrome 150) : WebGL 1
        * n'y expose NI OES_texture_half_float NI OES_texture_float — le solveur
        * mourait a la creation avec « texture flottante indisponible », d'ou une
        * card parfaitement vivante mais vide, alors que le meme code tourne dans
@@ -865,7 +864,6 @@ const _EN = {
  "Dot-matrix / display": "Dot-matrix / display",
  "Double-clic : revenir au défaut": "Double-click: back to default",
  "Droite": "Right",
- "Défauts = réglages validés au banc (27/09/2026). Double-clic sur une valeur pour y revenir.": "Defaults = settings validated on the test bench. Double-click a value to reset it.",
  "Défauts = réglages validés au banc. Double-clic sur une valeur pour y revenir.": "Defaults = settings validated on the test bench. Double-click a value to reset it.",
  "Dégradé — arrivée": "Gradient — to",
  "Dégradé — départ": "Gradient — from",
@@ -1302,7 +1300,7 @@ const _setLang = (h, o) => {   // o = instance (card/éditeur) : true tant que L
      * trame complète à chaque commande — glisser de 18 à 25 ne doit pas en
      * émettre sept. Et rien du tout quand la clim est à l'arrêt : une consigne
      * envoyée sur `off` part avec un mode actif et ALLUME la clim (cf
-     * _adjustTemp). Pas de molette non plus (cf incident du 30/08/2026). */
+     * _adjustTemp). Pas de molette non plus. */
     _knobSlots(){
       const a = (this._hass && this._hass.states[this._config.entity] || {}).attributes || {};
       const mn = parseFloat(a.min_temp), mx = parseFloat(a.max_temp), o = [];
@@ -1663,7 +1661,7 @@ const _setLang = (h, o) => {   // o = instance (card/éditeur) : true tant que L
         const acBody = this.shadowRoot.querySelector('.ac-body');
         if (!lous.length || !wrap || !acBody) return;
         /* v1.6.3 — flux MASQUÉ (clim coupée, show_wind faux, pas de flux d'air) :
-         * aucun contexte. Mesuré au banc (dashboard réel, plafond Android 8) :
+         * aucun contexte (Android plafonne à 8 contextes WebGL) :
          * _build lance _startWind sans condition, la clim coupée tenait donc 1
          * contexte sur 8 à CHAQUE construction, pour un flux invisible.
          * _applyWindVisibility rappelle _startWind quand le flux apparaît, et le
@@ -1804,7 +1802,7 @@ const _setLang = (h, o) => {   // o = instance (card/éditeur) : true tant que L
        * mobile c'est le poste de depense le plus betement gaspille.
        * On coupe le rAF au lieu de le laisser tourner a vide : une boucle qui
        * "return" tot reveille quand meme le GPU 60 fois par seconde. */
-      /* L'etat de la boucle vit sur `this`, PAS dans une closure. Vecu : avec un
+      /* L'etat de la boucle vit sur `this`, PAS dans une closure : avec un
        * `let running` local, disconnectedCallback annulait bien le rAF mais ne
        * pouvait pas remettre le drapeau a false ; au retour dans le DOM, kick()
        * voyait running===true et ne relancait rien. Flux mort definitivement.
@@ -2040,7 +2038,7 @@ const _setLang = (h, o) => {   // o = instance (card/éditeur) : true tant que L
       const color  = hdr.color       || 'var(--primary-color)';
       // Nombre nu ('20') -> 'px' ajoute : sinon injecte dans clamp()/calc() -> valeur
       // invalide, propriete entiere rejetee par le navigateur, taille retombe sur
-      // l'heritage (plus petite). Cf l'auteur 22/08/26 : "j'ai mis 20 c'est plus petit".
+      // l'heritage (plus petite).
       const size   = hdr.title_size
         ? (/^[\d.]+$/.test(String(hdr.title_size)) ? `${hdr.title_size}px` : hdr.title_size)
         : 'clamp(14px, 2vw, 16px)';
@@ -2956,9 +2954,8 @@ const _setLang = (h, o) => {   // o = instance (card/éditeur) : true tant que L
      * elle n'hérite plus de l'ancienne card CSS. */
     constructor() { super(); this._config = {}; this._hass = null; this._rendered = false; }
     /* HA appelle .setConfig() sur l'élément retourné par getConfigElement() — sans cet alias
-     * public, _setConfigBase() ne se déclenche jamais et l'éditeur reste vide (bug constaté le
-     * 24/08/26 : DOM <neon-climate-card-webgl-editor></...> sans aucun enfant, pas d'erreur
-     * console car HA ne fait qu'ignorer l'absence de la méthode). */
+     * public, _setConfigBase() ne se déclenche jamais et l'éditeur reste vide, sans erreur
+     * console. */
     setConfig(c) { this._setConfigBase(c); }
     disconnectedCallback() { this._disconnectedBase(); }
     _setConfigBase(c) {
@@ -3204,7 +3201,7 @@ const _setLang = (h, o) => {   // o = instance (card/éditeur) : true tant que L
         this._color('color_fan_btn', 'FAN (bouton cycle)', '#00FFAA');
       });
       this._group('Réglette de consigne', false, () => {
-        this._hint('Défauts = réglages validés au banc (27/09/2026). Double-clic sur une valeur pour y revenir.');
+        this._hint('Défauts = réglages validés au banc. Double-clic sur une valeur pour y revenir.');
         this._slider('knob_size',   'Taille du bouton (px)',   20, 48, 1,    0, KNOB_DEFAULTS.knob_size);
         this._slider('knob_wave',   'Onde au relâché (×)',     1.2, 4, 0.1,  1, KNOB_DEFAULTS.knob_wave);
         this._slider('hotel_glow',  'Halo',                    0, 1.5, 0.05, 2, KNOB_DEFAULTS.hotel_glow);
