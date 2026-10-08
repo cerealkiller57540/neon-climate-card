@@ -24,9 +24,7 @@ The air under the louvres is not a looping animation: it is a small Navier–Sto
 
 ## ✨ Features
 
-- **Two cards in one install**
-  - `neon-climate-card-webgl`: airflow rendered by a WebGL fluid solver (recommended).
-  - `neon-climate-card`: lighter version, same look, airflow drawn with CSS/canvas 2D.
+- `neon-climate-card-webgl`: airflow rendered by a WebGL fluid solver.
 - **Every HVAC mode** your entity supports (heat, cool, dry, fan only, auto, off), each with its own colour.
 - **Draggable setpoint slider** whose scale follows your entity's `min_temp`, `max_temp` and `target_temp_step`.
 - **Fan speed and swing controls** read from `fan_modes` and `swing_modes`.
@@ -43,11 +41,13 @@ The air under the louvres is not a looping animation: it is a small Navier–Sto
 2. Download **Neon Climate Card**.
 3. Reload your browser.
 
-HACS registers one resource, `neon-climate-card.js`. It loads the WebGL variant on its own, so **do not** add `neon-climate-card-webgl.js` as a second resource.
+HACS registers one resource, `neon-climate-card.js`. The card type is `custom:neon-climate-card-webgl`.
+
+If you used the former CSS card (`custom:neon-climate-card`), change its type to `custom:neon-climate-card-webgl`: the CSS version is no longer shipped.
 
 ### Manual
 
-1. Copy both files from [`dist/`](dist) to `config/www/neon-climate-card/`.
+1. Copy [`dist/neon-climate-card.js`](dist/neon-climate-card.js) to `config/www/neon-climate-card/`.
 2. Add a dashboard resource: URL `/local/neon-climate-card/neon-climate-card.js`, type **JavaScript module**.
 
 ## 🚀 Usage
@@ -81,8 +81,6 @@ header:
 | `neon_display_glow` | bool | `true` | Triple glow on the display digits |
 | `header` | object | — | `title`, `subtitle`, `icon`, `icon_color`, `icon_size`, `title_size`, `glow`, `glow_color`, `glow_size`, `gradient`, `gradient_from`, `gradient_to` |
 
-**WebGL card only**
-
 | Option | Default | Description |
 |---|---|---|
 | `flow_quality` | `auto` | `auto` (1 device pixel per CSS pixel on dense screens), `full` (up to 2×), `light`, `off` |
@@ -100,7 +98,7 @@ The other `flow_*` settings (`fan`, `wobble`, `speed`, `taper`, `glow`, `smoke_s
 
 **The airflow does not show.** It only shows when the unit is not `off`. If you set `power_entity`, it also needs the sensor to read above `power_threshold`.
 
-**Some cards go blank on my Android phone.** Android WebViews keep at most 8 WebGL contexts per page and drop the oldest one. This card uses a single context and only while the airflow is visible. If you run many WebGL cards on one view, use `neon-climate-card` (CSS) or `flow_quality: off` on some of them.
+**Some cards go blank on my Android phone.** Android WebViews keep at most 8 WebGL contexts per page and drop the oldest one. This card uses a single context and only while the airflow is visible. If you run many WebGL cards on one view, use `flow_quality: off` on some of them.
 
 **Which theme is in the screenshots?** Neo Tokyo, the author's own dark theme (not published). The card works with any theme.
 
