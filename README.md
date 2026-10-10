@@ -11,7 +11,7 @@
 
 [![Open your Home Assistant instance and open this repository in HACS.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=cerealkiller57540&repository=neon-climate-card&category=plugin)
 
-<img src="https://raw.githubusercontent.com/cerealkiller57540/neon-climate-card/main/images/cool.gif" alt="Neon Climate Card in cooling mode, airflow animated by a WebGL fluid solver" width="448">
+<img src="https://raw.githubusercontent.com/cerealkiller57540/neon-climate-card/main/images/heat.gif" alt="Neon Climate Card in heating mode, airflow animated by a WebGL fluid solver" width="434">
 
 </div>
 
