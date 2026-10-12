@@ -1,4 +1,4 @@
-/* ── neon-climate-card-webgl v1.9.0 ────────────────────────────────────────────
+/* ── neon-climate-card-webgl v1.9.1 ────────────────────────────────────────────
  * Variante WEBGL de neon-climate-card : le souffle sous la grille n'est plus une
  * animation 2D scriptée mais un vrai fluide (Navier-Stokes stable, lignée Stam /
  * PavelDoGreat) rendu par shaders. Chaque fente de la grille est un jet à part
@@ -51,7 +51,7 @@
     'DM Sans','Playfair Display','Cinzel',
   ];
 
-  const CARD_VERSION = '1.9.0';
+  const CARD_VERSION = '1.9.1';
 
   /* Défauts ajustés visuellement : ce sont eux la référence (les valeurs
    * théoriques donnaient un panache anémique). */
@@ -2033,6 +2033,13 @@ const _setLang = (h, o) => {   // o = instance (card/éditeur) : true tant que L
       if (this._windObserver) { this._windObserver.disconnect(); this._windObserver = null; }
       if (this._windIO)       { this._windIO.disconnect();       this._windIO = null; }
     }
+    _haptic(t) { this.dispatchEvent(new CustomEvent('haptic', { detail: t, bubbles: true, composed: true })); }
+    // light au geste, failure si HA refuse (rejet relancé : les .catch existants restent servis)
+    _call(d, s, data) {
+      this._haptic('light');
+      return Promise.resolve(this._hass.callService(d, s, data)).catch(e => { this._haptic('failure'); throw e; });
+    }
+    getGridOptions() { return { columns: 12, min_columns: 6 }; }
     getCardSize()             { return 4; }
     _i18nStatic() {   /* textes fixes du gabarit : ré-appliqués quand la langue change (le gabarit est construit avant hass) */
     const sr = this.shadowRoot; if (!sr) return;
@@ -2270,7 +2277,7 @@ const _setLang = (h, o) => {   // o = instance (card/éditeur) : true tant que L
     }
     _callService(svc, data) {
       if (!this._hass) return;
-      this._hass.callService('climate', svc, { entity_id: this._config.entity, ...data });
+      this._call('climate', svc, { entity_id: this._config.entity, ...data });
     }
     _modeLabel(mode) {
       return { off:'OFF', heat:'HEAT', cool:'COOL', dry:'DRY', fan_only:'FAN' }[mode]
