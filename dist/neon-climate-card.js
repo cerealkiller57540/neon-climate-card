@@ -1,4 +1,4 @@
-/* ── neon-climate-card-webgl v1.9.2 ────────────────────────────────────────────
+/* ── neon-climate-card-webgl v1.9.3 ────────────────────────────────────────────
  * Variante WEBGL de neon-climate-card : le souffle sous la grille n'est plus une
  * animation 2D scriptée mais un vrai fluide (Navier-Stokes stable, lignée Stam /
  * PavelDoGreat) rendu par shaders. Chaque fente de la grille est un jet à part
@@ -51,7 +51,7 @@
     'DM Sans','Playfair Display','Cinzel',
   ];
 
-  const CARD_VERSION = '1.9.2';
+  const CARD_VERSION = '1.9.3';
 
   function _nccEsc(v) {
     return String(v ?? '').replace(/[&<>"']/g, c => (
@@ -3264,6 +3264,26 @@ const _setLang = (h, o) => {   // o = instance (card/éditeur) : true tant que L
   }
 
   customElements.define('neon-climate-card-webgl-editor', NeonClimateCardWebglEditor);
+  // Une valeur de config interpolée dans un <style> ne doit pas pouvoir le refermer.
+  function _nccCfgSafe(v, path) {
+    if (typeof v === 'string') return v.replace(/<\/(style)/gi, '<\\/$1');
+    if (!v || typeof v !== 'object') return v;
+    const isArr = Array.isArray(v);
+    let out = v;
+    for (const k of Object.keys(v)) {
+      const p = isArr ? path : (path ? path + '.' + k : k);
+      const nv = _nccCfgSafe(v[k], p);
+      if (nv !== v[k]) {
+        if (out === v) out = isArr ? v.slice() : { ...v };
+        out[k] = nv;
+      }
+    }
+    return out;
+  }
+  {
+    const _setCfg = NeonClimateCardWebgl.prototype.setConfig;
+    NeonClimateCardWebgl.prototype.setConfig = function (c) { return _setCfg.call(this, _nccCfgSafe(c, '')); };
+  }
   customElements.define('neon-climate-card-webgl', NeonClimateCardWebgl);
 
   window.customCards = window.customCards || [];
