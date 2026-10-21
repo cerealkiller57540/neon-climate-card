@@ -1,4 +1,4 @@
-/* ── neon-climate-card-webgl v1.9.1 ────────────────────────────────────────────
+/* ── neon-climate-card-webgl v1.9.2 ────────────────────────────────────────────
  * Variante WEBGL de neon-climate-card : le souffle sous la grille n'est plus une
  * animation 2D scriptée mais un vrai fluide (Navier-Stokes stable, lignée Stam /
  * PavelDoGreat) rendu par shaders. Chaque fente de la grille est un jet à part
@@ -51,7 +51,12 @@
     'DM Sans','Playfair Display','Cinzel',
   ];
 
-  const CARD_VERSION = '1.9.1';
+  const CARD_VERSION = '1.9.2';
+
+  function _nccEsc(v) {
+    return String(v ?? '').replace(/[&<>"']/g, c => (
+      { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  }
 
   /* Défauts ajustés visuellement : ce sont eux la référence (les valeurs
    * théoriques donnaient un panache anémique). */
@@ -2175,12 +2180,12 @@ const _setLang = (h, o) => {   // o = instance (card/éditeur) : true tant que L
       if (!icon && !title) return '';
       return `
         <div class="neon-hdr">
-          ${icon ? `<div class="neon-hdr-icon"><ha-icon icon="${icon}"></ha-icon></div>` : ''}
+          ${icon ? `<div class="neon-hdr-icon"><ha-icon icon="${_nccEsc(icon)}"></ha-icon></div>` : ''}
           <div class="neon-hdr-body">
-            ${title    ? `<span class="neon-hdr-title">${title}</span>`       : ''}
-            ${subtitle ? `<span class="neon-hdr-subtitle">${subtitle}</span>` : ''}
+            ${title    ? `<span class="neon-hdr-title">${_nccEsc(title)}</span>`       : ''}
+            ${subtitle ? `<span class="neon-hdr-subtitle">${_nccEsc(subtitle)}</span>` : ''}
           </div>
-          ${badge ? `<span class="neon-hdr-badge">${badge}</span>` : ''}
+          ${badge ? `<span class="neon-hdr-badge">${_nccEsc(badge)}</span>` : ''}
         </div>
         <div class="neon-main-div"></div>`;
     }
