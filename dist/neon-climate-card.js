@@ -1,4 +1,4 @@
-/* ── neon-climate-card-webgl v1.9.3 ────────────────────────────────────────────
+/* ── neon-climate-card-webgl v1.10.1 ────────────────────────────────────────────
  * Variante WEBGL de neon-climate-card : le souffle sous la grille n'est plus une
  * animation 2D scriptée mais un vrai fluide (Navier-Stokes stable, lignée Stam /
  * PavelDoGreat) rendu par shaders. Chaque fente de la grille est un jet à part
@@ -16,6 +16,9 @@
  *   · OFF quitte la rangée de chips : la LED du boîtier devient l'interrupteur
  *     (verte en marche, rouge à l'arrêt)
  *   · bouton VOLET (absent de la prod) : ouverture en POURCENTAGE, pas en "3/5"
+ *   · plusieurs clims dans UNE card : `extra_climates` ajoute des clims à la
+ *     principale, et un sélecteur dans l'en-tête bascule de l'une à l'autre
+ *     (choix mémorisé par navigateur)
  *   · ventilation : hélice + jauge 3 barres ; en AUTO les barres respirent en
  *     cascade au lieu d'afficher le mot
  *   · les deux boutons machine ne suivent plus la couleur du mode (la barre
@@ -30,6 +33,15 @@
  * ────────────────────────────────────────────────────────────────────────────*/
 (function () {
   'use strict';
+
+  /* Polices embarquees (woff2 latin, licence OFL 1.1, texte dans NOTICE.md du depot) : aucune requete vers Google Fonts.
+   * Orbitron (c) 2018 The Orbitron Project Authors, SIL OFL 1.1 */
+  if (!document.getElementById('neon-font-orbitron')) {
+    const s = document.createElement('style');
+    s.id = 'neon-font-orbitron';
+    s.textContent = "@font-face{font-family:'Orbitron';font-style:normal;font-weight:400 900;font-display:swap;src:url(data:font/woff2;base64,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) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}";
+    document.head.appendChild(s);
+  }
 
   /* ── Socle rapatrié de neon-climate-card.js ──
    * Cette card ne dépend plus d'aucune autre ressource. */
@@ -51,7 +63,7 @@
     'DM Sans','Playfair Display','Cinzel',
   ];
 
-  const CARD_VERSION = '1.9.3';
+  const CARD_VERSION = '1.10.1';
 
   function _nccEsc(v) {
     return String(v ?? '').replace(/[&<>"']/g, c => (
@@ -951,6 +963,11 @@ const _EN = {
  "Ventilation — maxi": "Fan — max",
  "Ventilation — mini": "Fan — min",
  "Vide = friendly_name": "Empty = friendly_name",
+ "FIXE": "FIXED",
+ "Balayage du volet": "Vane sweep",
+ "Clims supplémentaires": "Extra air conditioners",
+ "Clim": "A/C",
+ "Nom (puce de l'en-tête)": "Name (header chip)",
  "Volet — fermé": "Vane — closed",
  "Volet — grand ouvert": "Vane — wide open",
  "défaut : blanc cassé": "default: off-white",
@@ -1322,11 +1339,9 @@ const _setLang = (h, o) => {   // o = instance (card/éditeur) : true tant que L
     }
 
     /* ─── Réglette de consigne « Neon-Knob » (v1.6) ─────────────────────────
-     * UN SEUL envoi, au RELÂCHÉ : l'entité est un blaster IR qui rejoue une
-     * trame complète à chaque commande — glisser de 18 à 25 ne doit pas en
-     * émettre sept. Et rien du tout quand la clim est à l'arrêt : une consigne
-     * envoyée sur `off` part avec un mode actif et ALLUME la clim (cf
-     * _adjustTemp). Pas de molette non plus. */
+     * UN SEUL envoi, au RELÂCHÉ : glisser de 18 à 25 ne doit pas émettre sept
+     * commandes. Et rien du tout quand la clim est à l'arrêt (cf _adjustTemp).
+     * Pas de molette non plus. */
     _knobSlots(){
       const a = (this._hass && this._hass.states[this._config.entity] || {}).attributes || {};
       const mn = parseFloat(a.min_temp), mx = parseFloat(a.max_temp), o = [];
@@ -1360,7 +1375,7 @@ const _setLang = (h, o) => {   // o = instance (card/éditeur) : true tant que L
       const st = () => this._hass && this._hass.states[this._config.entity];
       // Doigt : pan-y laisse le scroll vertical à la page (le navigateur émet alors
       // pointercancel, donc aucun envoi). La réglette ne s'arme qu'après un glissé
-      // nettement horizontal ; un simple toucher n'envoie rien (trame IR = clim).
+      // nettement horizontal ; un simple toucher n'envoie rien.
       let arm = null;
       const grab = ev => {
         this._knobDrag = at(ev);
@@ -1606,13 +1621,20 @@ const _setLang = (h, o) => {   // o = instance (card/éditeur) : true tant que L
 
       /* Volet : la latte de l'icône bascule, et le libellé donne l'ouverture en
        * pourcentage — 0% fermé → 100% ouvert — au lieu d'un "3/5" abstrait. */
+      /* Clim sans crans de volet (swing_mode on/off) : le bouton dit « balayage
+       * en cours » ou « volet fixe » au lieu d'un pourcentage qui ne bougerait pas. */
+      const swBin  = attrs.swing_mode === 'on' || attrs.swing_mode === 'off';
+      const swOn   = attrs.swing_mode === 'on';
+      const swOpen = swBin ? (swOn ? 0.5 : open) : open;
       const slats = sr.querySelectorAll('.swing-slat');
-      slats.forEach(el => { el.style.transform = `rotate(${(4 + 34*open).toFixed(1)}deg)`; });
+      slats.forEach(el => { el.style.transform = `rotate(${(4 + 34*swOpen).toFixed(1)}deg)`; });
       const air = sr.querySelector('.swing-air');
-      if (air) air.style.opacity = (0.15 + 0.5*open).toFixed(2);
+      if (air) air.style.opacity = (0.15 + 0.5*swOpen).toFixed(2);
       const swLbl = sr.getElementById('swing-lbl');
-      if (swLbl) swLbl.textContent = Math.round(open * 100) + '%';
-      tint(this._swingBtn, mix(XENON, PLASMA, open), open);
+      if (swLbl) swLbl.textContent = swBin ? _t(swOn ? 'SWING' : 'FIXE') : Math.round(open * 100) + '%';
+      const swX = swBin ? (swOn ? 0.85 : 0.15) : open;
+      tint(this._swingBtn, mix(XENON, PLASMA, swX), swX);
+      if (this._swingBtn) this._swingBtn.title = _t(swBin ? 'Balayage du volet' : 'Ouverture du volet');
 
       /* Cible : la réglette la porte (la pilule ne revient qu'en mode range). */
       const pill = sr.querySelector('.temp-pill');
@@ -2154,6 +2176,26 @@ const _setLang = (h, o) => {   // o = instance (card/éditeur) : true tant que L
           background: color-mix(in srgb, ${badgeColor} 8%, transparent);
           padding: 2px 7px; border-radius: 4px; white-space: nowrap;
         }
+        /* Titre en nowrap + déborde visible : sans retour à la ligne les puces passeraient dessous. */
+        .neon-hdr.multi { flex-wrap: wrap; row-gap: 6px; }
+        .neon-hdr.multi .neon-hdr-body { flex: 1 1 auto; }
+        .neon-hdr-sel { margin-left: auto; flex-shrink: 0; display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 6px; }
+        .neon-hdr-badge + .neon-hdr-sel { margin-left: 0; }
+        .neon-hdr-chip {
+          font-family: ${font}; font-size: calc(${size} * 0.8); letter-spacing: 1.5px; text-transform: uppercase;
+          color: color-mix(in srgb, ${color} 55%, transparent);
+          border: 1px solid color-mix(in srgb, ${color} 30%, transparent);
+          background: transparent; padding: 3px 10px; border-radius: 999px;
+          cursor: pointer; white-space: nowrap; line-height: 1.2;
+          transition: color .2s, border-color .2s, background .2s, box-shadow .2s;
+        }
+        .neon-hdr-chip:hover { color: ${color}; border-color: color-mix(in srgb, ${color} 60%, transparent); }
+        .neon-hdr-chip.active {
+          color: ${color};
+          border-color: color-mix(in srgb, ${color} 85%, transparent);
+          background: color-mix(in srgb, ${color} 14%, transparent);
+          box-shadow: 0 0 10px color-mix(in srgb, ${color} 35%, transparent);
+        }
         /* Même divider que neon-entities-card : dégradé primaire/accent qui coule,
            bords fondus au masque. */
         .neon-main-div {
@@ -2177,17 +2219,27 @@ const _setLang = (h, o) => {   // o = instance (card/éditeur) : true tant que L
       const title    = hdr.title    || '';
       const subtitle = hdr.subtitle || '';
       const badge    = hdr.badge    || '';
-      if (!icon && !title) return '';
+      const multi    = this._climates && this._climates.length > 1;
+      if (!icon && !title && !multi) return '';
+      const chips = multi ? `
+          <div class="neon-hdr-sel" role="group" aria-label="${_nccEsc(_t('Clim'))}">
+            ${this._climates.map((c, i) => `<button type="button" class="neon-hdr-chip${i === this._activeIdx ? ' active' : ''}" aria-pressed="${i === this._activeIdx}">${_nccEsc(this._climateLabel(c))}</button>`).join('')}
+          </div>` : '';
       return `
-        <div class="neon-hdr">
+        <div class="neon-hdr${multi ? ' multi' : ''}">
           ${icon ? `<div class="neon-hdr-icon"><ha-icon icon="${_nccEsc(icon)}"></ha-icon></div>` : ''}
           <div class="neon-hdr-body">
             ${title    ? `<span class="neon-hdr-title">${_nccEsc(title)}</span>`       : ''}
             ${subtitle ? `<span class="neon-hdr-subtitle">${_nccEsc(subtitle)}</span>` : ''}
           </div>
           ${badge ? `<span class="neon-hdr-badge">${_nccEsc(badge)}</span>` : ''}
+          ${chips}
         </div>
         <div class="neon-main-div"></div>`;
+    }
+    _climateLabel(c) {
+      const st = this._hass && this._hass.states[c.entity];
+      return c.name || (st && st.attributes.friendly_name) || c.entity.split('.').pop();
     }
     _applyWindVisibility() {
       const wrap = this.shadowRoot.querySelector('.wind-wrap');
@@ -2234,6 +2286,8 @@ const _setLang = (h, o) => {   // o = instance (card/éditeur) : true tant que L
           this._callService('set_hvac_mode', { hvac_mode: btn.dataset.mode })
         );
       });
+      sr.querySelectorAll('.neon-hdr-chip').forEach((b, i) =>
+        b.addEventListener('click', e => { e.stopPropagation(); this._pickClimate(i); }));
       sr.querySelector('.temp-minus').addEventListener('click', () => this._adjustTemp(-1));
       sr.querySelector('.temp-plus').addEventListener('click',  () => this._adjustTemp(+1));
       const fanBtn = sr.getElementById('fan-cycle-btn');
@@ -2258,13 +2312,8 @@ const _setLang = (h, o) => {   // o = instance (card/éditeur) : true tant que L
       if (!this._hass) return;
       const s = this._hass.states[this._config.entity];
       if (!s) return;
-      /* Garde-fou : ne JAMAIS régler la consigne quand l'appareil est éteint.
-       * L'entité est portée par un blaster IR (NodOn), qui est incapable
-       * d'émettre une commande partielle : toute trame encode l'état complet
-       * (mode + consigne + ventilation + volet). Envoyer une consigne sur une
-       * clim `off` fait donc partir une trame avec un mode ACTIF et l'allume
-       * réellement. Régler la température ne doit jamais être un interrupteur :
-       * pour allumer, on passe par les boutons de mode. */
+      /* Garde-fou : jamais de consigne sur une clim éteinte — régler la
+       * température ne doit pas être un interrupteur. On allume par la LED. */
       if (s.state === 'off') return;
       const min  = parseFloat(s.attributes.min_temp)         || 16;
       const max  = parseFloat(s.attributes.max_temp)         || 30;
@@ -2304,6 +2353,7 @@ const _setLang = (h, o) => {   // o = instance (card/éditeur) : true tant que L
       // aux attributs/classes du host au constructor → NotSupportedError).
       if (NCC_IS_LOW_POWER) this.classList.add('low-power');
       this._cleanup();
+      this._climates = this._readClimates(config);
       this._config = {
         entity:          config.entity,
         name:            config.name            || null,
@@ -2323,13 +2373,62 @@ const _setLang = (h, o) => {   // o = instance (card/éditeur) : true tant que L
         neon_display_glow: config.neon_display_glow !== false,   // triple text-shadow ON/OFF
         header: config.header !== undefined ? config.header : {},
       };
+      this._activeIdx = 0;
+      this._prevTemp = this._prevHumid = null;
+      this._lastOnMode = null;
+      if (this._climates.length > 1) {
+        let saved = null;
+        try { saved = localStorage.getItem('ncc-active:' + this._climates[0].entity); } catch (e) { /* stockage indisponible */ }
+        const i = this._climates.findIndex(c => c.entity === saved);
+        if (i > 0) this._applyClimate(i);
+      }
       this._build();
+    }
+    /* La clim principale (entity, name, humidity_entity, power_*) puis celles de
+     * `extra_climates`, chacune avec ses propres capteurs. */
+    _readClimates(config) {
+      const th = v => (v != null && v !== '' ? parseFloat(v) : null);
+      const one = o => ({
+        entity: o.entity,
+        name: o.name || null,
+        humidity_entity: o.humidity_entity || null,
+        power_entity: o.power_entity || null,
+        power_threshold: th(o.power_threshold),
+      });
+      const list = [one(config)];
+      const extra = Array.isArray(config.extra_climates) ? config.extra_climates : [];
+      extra.forEach(o => {
+        if (o && o.entity && !list.some(c => c.entity === o.entity)) list.push(one(o));
+      });
+      return list;
+    }
+    /* Pose la clim n° i comme clim active : tout le reste de la card lit
+     * this._config.entity / humidity_entity / power_entity. */
+    _applyClimate(i) {
+      const c = this._climates[i];
+      if (!c) return false;
+      this._activeIdx = i;
+      this._config.entity          = c.entity;
+      this._config.name            = c.name;
+      this._config.humidity_entity = c.humidity_entity;
+      this._config.power_entity    = c.power_entity;
+      this._config.power_threshold = c.power_threshold != null ? c.power_threshold : 10;
+      return true;
+    }
+    _pickClimate(i) {
+      if (i === this._activeIdx || !this._applyClimate(i)) return;
+      this._prevTemp = this._prevHumid = null;   // pas de glitch d'une clim à l'autre
+      this._lastOnMode = null;
+      try { localStorage.setItem('ncc-active:' + this._climates[0].entity, this._climates[i].entity); } catch (e) { /* stockage indisponible */ }
+      this.shadowRoot.querySelectorAll('.neon-hdr-chip').forEach((b, k) => {
+        b.classList.toggle('active', k === i);
+        b.setAttribute('aria-pressed', k === i ? 'true' : 'false');
+      });
+      this._update();
     }
     _buildBase() {
       this.shadowRoot.innerHTML = `
         <style>
-          @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&display=swap');
-
           :host {
             display: block;
             font-family: 'Orbitron', var(--primary-font-family, 'Rajdhani', system-ui, sans-serif);
@@ -2796,6 +2895,12 @@ const _setLang = (h, o) => {   // o = instance (card/éditeur) : true tant que L
       this._prevHumid = humidStr;
 
       sr.querySelector('.ac-name').textContent    = name.toUpperCase();
+      if (this._climates.length > 1) {
+        sr.querySelectorAll('.neon-hdr-chip').forEach((b, k) => {
+          const t = this._climateLabel(this._climates[k]);
+          if (b.textContent !== t) b.textContent = t;
+        });
+      }
       sr.querySelector('.room-temp').textContent  = tempStr;
       sr.querySelector('.room-humid').textContent = humidStr;
       sr.querySelector('.mode-label').textContent = this._modeLabel(mode);
@@ -2966,6 +3071,19 @@ const _setLang = (h, o) => {   // o = instance (card/éditeur) : true tant que L
       this._entity('entity', 'Entité climate *', 'climate');
       this._text('name', 'Nom affiché', 'Vide = friendly_name');
 
+      this._group('Clims supplémentaires', false, () => {
+        this._hint("Facultatif — chaque clim ajoutée apparaît comme une puce dans l'en-tête ; la card bascule de l'une à l'autre.");
+        for (let i = 0; i < 3; i++) {
+          this._group('Clim ' + (i + 2), false, () => {
+            this._entity(`extra_climates.${i}.entity`, 'Entité climate', 'climate');
+            this._text(`extra_climates.${i}.name`, "Nom (puce de l'en-tête)", 'Vide = friendly_name');
+            this._entity(`extra_climates.${i}.humidity_entity`, 'Entité humidité', 'sensor');
+            this._entity(`extra_climates.${i}.power_entity`, 'Entité puissance', 'sensor');
+            this._text(`extra_climates.${i}.power_threshold`, 'Seuil puissance (W)', '10');
+          });
+        }
+      });
+
       this._group('En-tête', false, () => {
         this._text('header.title', 'Titre', 'ex: Climatisation');
         this._text('header.subtitle', 'Sous-titre', 'optionnel — texte sous le titre');
@@ -3081,13 +3199,21 @@ const _setLang = (h, o) => {   // o = instance (card/éditeur) : true tant que L
         const parts = key.split('.');
         let o = this._config;
         for (let i = 0; i < parts.length - 1; i++) {
-          if (!o[parts[i]] || typeof o[parts[i]] !== 'object') o[parts[i]] = {};
+          if (!o[parts[i]] || typeof o[parts[i]] !== 'object') o[parts[i]] = /^\d+$/.test(parts[i + 1]) ? [] : {};
           o = o[parts[i]];
         }
         const last = parts[parts.length - 1];
         if (empty) delete o[last]; else o[last] = value;
-        const parent = parts.slice(0, -1).reduce((a, k) => a && a[k], this._config);
-        if (parent && typeof parent === 'object' && !Object.keys(parent).length) delete this._config[parts[0]];
+        if (Array.isArray(this._config[parts[0]])) {
+          /* liste : trous comblés par {}, éléments vides de queue retirés */
+          const arr = this._config[parts[0]];
+          for (let k = 0; k < arr.length; k++) if (!arr[k]) arr[k] = {};
+          while (arr.length && !Object.keys(arr[arr.length - 1]).length) arr.pop();
+          if (!arr.length) delete this._config[parts[0]];
+        } else {
+          const parent = parts.slice(0, -1).reduce((a, k) => a && a[k], this._config);
+          if (parent && typeof parent === 'object' && !Object.keys(parent).length) delete this._config[parts[0]];
+        }
       } else if (empty) { delete this._config[key]; }
       else { this._config[key] = value; }
       this.dispatchEvent(new CustomEvent('config-changed',

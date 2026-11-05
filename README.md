@@ -104,6 +104,10 @@ The other `flow_*` settings (`fan`, `wobble`, `speed`, `taper`, `glow`, `smoke_s
 
 ## 🌃 More neon cards
 
+## 🔤 Fonts and privacy
+
+The Orbitron font is embedded in `dist/neon-climate-card.js` (Latin subset, WOFF2, unmodified from Google Fonts). The card makes **no request to Google Fonts** or any other third-party server. Orbitron is licensed under the SIL Open Font License 1.1, see [NOTICE.md](NOTICE.md).
+
 ## 🧱 How this repository is built
 
 `dist/neon-climate-card.js` is the file HACS installs. It is built from the version running on the author's own Home Assistant: personal defaults are replaced with neutral ones, the version number is stamped, and the build stops if a local IP address or a token is found. That working copy is not published; bugs and suggestions are welcome as issues.
