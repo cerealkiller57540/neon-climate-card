@@ -1,4 +1,4 @@
-/* ── neon-climate-card-webgl v1.10.1 ────────────────────────────────────────────
+/* ── neon-climate-card-webgl v1.11.2 ────────────────────────────────────────────
  * Variante WEBGL de neon-climate-card : le souffle sous la grille n'est plus une
  * animation 2D scriptée mais un vrai fluide (Navier-Stokes stable, lignée Stam /
  * PavelDoGreat) rendu par shaders. Chaque fente de la grille est un jet à part
@@ -63,7 +63,7 @@
     'DM Sans','Playfair Display','Cinzel',
   ];
 
-  const CARD_VERSION = '1.10.1';
+  const CARD_VERSION = '1.11.2';
 
   function _nccEsc(v) {
     return String(v ?? '').replace(/[&<>"']/g, c => (
@@ -2138,6 +2138,8 @@ const _setLang = (h, o) => {   // o = instance (card/éditeur) : true tant que L
         ? `filter:drop-shadow(0 0 ${Math.round(hdrGlowSize*0.2)}px #fff) drop-shadow(0 0 ${Math.round(hdrGlowSize*0.4)}px ${hdrGlowColor}) drop-shadow(0 0 ${Math.round(hdrGlowSize*0.8)}px ${hdrGlowColor}) drop-shadow(0 0 ${hdrGlowSize}px ${hdrGlowColor});`
         : '';
       const badgeColor = hdr.badge_color || 'rgba(0,255,249,0.7)';
+      // Bordure/fond des puces = icon_color du header, comme leurs icônes.
+      const chipColor = hdrIconColor;
       return `
         .neon-hdr { display:flex; align-items:center; gap:8px; padding:11px 14px 8px; }
         .neon-hdr-icon { display:flex; align-items:center; flex-shrink:0; }
@@ -2182,19 +2184,54 @@ const _setLang = (h, o) => {   // o = instance (card/éditeur) : true tant que L
         .neon-hdr-sel { margin-left: auto; flex-shrink: 0; display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 6px; }
         .neon-hdr-badge + .neon-hdr-sel { margin-left: 0; }
         .neon-hdr-chip {
-          font-family: ${font}; font-size: calc(${size} * 0.8); letter-spacing: 1.5px; text-transform: uppercase;
-          color: color-mix(in srgb, ${color} 55%, transparent);
-          border: 1px solid color-mix(in srgb, ${color} 30%, transparent);
-          background: transparent; padding: 3px 10px; border-radius: 999px;
-          cursor: pointer; white-space: nowrap; line-height: 1.2;
+          --mdc-icon-size: calc(${size} * 1.2);
+          color: ${chipColor};
+          border: 1px solid color-mix(in srgb, ${chipColor} 30%, transparent);
+          background: transparent; padding: 4px 9px; border-radius: 999px;
+          cursor: pointer; line-height: 0; display: inline-flex; align-items: center;
           transition: color .2s, border-color .2s, background .2s, box-shadow .2s;
         }
-        .neon-hdr-chip:hover { color: ${color}; border-color: color-mix(in srgb, ${color} 60%, transparent); }
+        /* Rendu copié de .neon-hdr-icon ha-icon : même couleur, même filtre, même glow. */
+        .neon-hdr-chip ha-icon {
+          display: block; transition: filter .3s;
+          color: ${hdrIconColor};
+          filter: drop-shadow(0 0 8px color-mix(in srgb, currentColor, transparent 10%));
+          ${hdrIconGlow}
+        }
+        /* Effet = la clim de CETTE puce souffle : halo à la couleur de son mode
+           (--fx), l'icône reste à la couleur du texte du header. */
+        .neon-hdr-chip:not([data-fx="off"])[data-fx] ha-icon {
+          filter: drop-shadow(0 0 3px var(--fx)) drop-shadow(0 0 7px color-mix(in srgb, var(--fx) 60%, transparent));
+        }
+        .neon-hdr-chip[data-fx="heat"]     ha-icon { animation: ncc-fx-heat 1.6s ease-in-out infinite; }
+        .neon-hdr-chip[data-fx="cool"]     ha-icon { animation: ncc-fx-cool 3.2s ease-in-out infinite; }
+        .neon-hdr-chip[data-fx="dry"]      ha-icon { animation: ncc-fx-dry  2.4s ease-in-out infinite; }
+        .neon-hdr-chip[data-fx="fan_only"] ha-icon { animation: ncc-fx-fan  2.2s ease-in-out infinite; }
+        @keyframes ncc-fx-heat {
+          0%,100% { transform: translateY(0);      filter: drop-shadow(0 0 3px var(--fx)) drop-shadow(0 0 7px color-mix(in srgb, var(--fx) 60%, transparent)); }
+          35%     { transform: translateY(-1px);   filter: drop-shadow(0 -1px 4px var(--fx)) drop-shadow(0 -2px 10px var(--fx)); }
+          60%     { transform: translateY(-0.5px); filter: drop-shadow(0 0 2px var(--fx)) drop-shadow(0 0 5px color-mix(in srgb, var(--fx) 50%, transparent)); }
+        }
+        @keyframes ncc-fx-cool {
+          0%,100% { filter: drop-shadow(0 0 2px var(--fx)) drop-shadow(0 0 5px color-mix(in srgb, var(--fx) 40%, transparent)); }
+          50%     { filter: drop-shadow(0 0 4px var(--fx)) drop-shadow(0 0 12px var(--fx)); }
+        }
+        @keyframes ncc-fx-dry {
+          0%,100% { transform: translateY(0); }
+          50%     { transform: translateY(1.5px); }
+        }
+        @keyframes ncc-fx-fan {
+          0%,100% { transform: rotate(0); }
+          25%     { transform: rotate(-6deg); }
+          75%     { transform: rotate(6deg); }
+        }
+        @media (prefers-reduced-motion: reduce) { .neon-hdr-chip ha-icon { animation: none !important; } }
+        :host(.low-power) .neon-hdr-chip ha-icon { animation: none !important; }
+        .neon-hdr-chip:hover { border-color: color-mix(in srgb, ${chipColor} 60%, transparent); }
         .neon-hdr-chip.active {
-          color: ${color};
-          border-color: color-mix(in srgb, ${color} 85%, transparent);
-          background: color-mix(in srgb, ${color} 14%, transparent);
-          box-shadow: 0 0 10px color-mix(in srgb, ${color} 35%, transparent);
+          border-color: color-mix(in srgb, ${chipColor} 85%, transparent);
+          background: color-mix(in srgb, ${chipColor} 14%, transparent);
+          box-shadow: 0 0 10px color-mix(in srgb, ${chipColor} 35%, transparent);
         }
         /* Même divider que neon-entities-card : dégradé primaire/accent qui coule,
            bords fondus au masque. */
@@ -2223,7 +2260,7 @@ const _setLang = (h, o) => {   // o = instance (card/éditeur) : true tant que L
       if (!icon && !title && !multi) return '';
       const chips = multi ? `
           <div class="neon-hdr-sel" role="group" aria-label="${_nccEsc(_t('Clim'))}">
-            ${this._climates.map((c, i) => `<button type="button" class="neon-hdr-chip${i === this._activeIdx ? ' active' : ''}" aria-pressed="${i === this._activeIdx}">${_nccEsc(this._climateLabel(c))}</button>`).join('')}
+            ${this._climates.map((c, i) => { const l = _nccEsc(this._climateLabel(c)); return `<button type="button" class="neon-hdr-chip${i === this._activeIdx ? ' active' : ''}" aria-pressed="${i === this._activeIdx}" aria-label="${l}" title="${l}"><ha-icon icon="${_nccEsc(this._climateIcon(c))}"></ha-icon></button>`; }).join('')}
           </div>` : '';
       return `
         <div class="neon-hdr${multi ? ' multi' : ''}">
@@ -2240,6 +2277,35 @@ const _setLang = (h, o) => {   // o = instance (card/éditeur) : true tant que L
     _climateLabel(c) {
       const st = this._hass && this._hass.states[c.entity];
       return c.name || (st && st.attributes.friendly_name) || c.entity.split('.').pop();
+    }
+    /* Icône de puce : `icon` de la clim, sinon devinée sur le nom de la pièce. */
+    _climateIcon(c) {
+      if (c.icon) return c.icon;
+      const n = (this._climateLabel(c) + ' ' + c.entity).toLowerCase();
+      const guess = [
+        [/chambre|bedroom|bed/, 'mdi:bed-king-outline'],
+        [/bureau|office|desk/,  'mdi:desk'],
+        [/salon|s[ée]jour|living/, 'mdi:sofa-outline'],
+        [/cuisine|kitchen/,     'mdi:countertop-outline'],
+        [/bain|bath|sdb/,       'mdi:shower'],
+        [/enfant|kid|b[ée]b[ée]/, 'mdi:teddy-bear'],
+        [/garage|atelier/,      'mdi:garage-variant'],
+      ].find(([re]) => re.test(n));
+      return guess ? guess[1] : 'mdi:air-conditioner';
+    }
+    /* Mode d'effet d'une puce : le mode de SA clim, seulement si elle souffle
+     * vraiment (puissance ≥ seuil quand un power_entity est donné). */
+    _climateFx(c) {
+      const h = this._hass;
+      const st = h && h.states[c.entity];
+      const mode = st ? st.state : 'off';
+      if (!['heat', 'cool', 'dry', 'fan_only'].includes(mode)) return 'off';
+      if (c.power_entity) {
+        const p = parseFloat(h.states[c.power_entity] && h.states[c.power_entity].state);
+        const thr = c.power_threshold != null ? c.power_threshold : 10;
+        if (!(p >= thr)) return 'off';
+      }
+      return mode;
     }
     _applyWindVisibility() {
       const wrap = this.shadowRoot.querySelector('.wind-wrap');
@@ -2391,6 +2457,7 @@ const _setLang = (h, o) => {   // o = instance (card/éditeur) : true tant que L
       const one = o => ({
         entity: o.entity,
         name: o.name || null,
+        icon: o.icon || null,
         humidity_entity: o.humidity_entity || null,
         power_entity: o.power_entity || null,
         power_threshold: th(o.power_threshold),
@@ -2773,8 +2840,8 @@ const _setLang = (h, o) => {   // o = instance (card/éditeur) : true tant que L
                     </div>
                   </div>
                 </div>
-                <div class="display-sep"></div>
-                <div class="display-col">
+                <div class="display-sep humid-part"></div>
+                <div class="display-col humid-part">
                   <div class="display-label">HUMID</div>
                   <div class="display-value">
                     <div class="glitch-wrap" id="gw-humid">
@@ -2897,10 +2964,19 @@ const _setLang = (h, o) => {   // o = instance (card/éditeur) : true tant que L
       sr.querySelector('.ac-name').textContent    = name.toUpperCase();
       if (this._climates.length > 1) {
         sr.querySelectorAll('.neon-hdr-chip').forEach((b, k) => {
-          const t = this._climateLabel(this._climates[k]);
-          if (b.textContent !== t) b.textContent = t;
+          const c = this._climates[k];
+          const t = this._climateLabel(c);
+          if (b.title !== t) { b.title = t; b.setAttribute('aria-label', t); }
+          const fx = this._climateFx(c);
+          if (b.dataset.fx !== fx) {
+            b.dataset.fx = fx;
+            if (fx !== 'off') b.style.setProperty('--fx', this._modeColor(fx) || '#00fff9');
+          }
         });
       }
+      /* Sans capteur ni attribut current_humidity, la colonne n'aurait jamais de valeur. */
+      const hasHumid = !!this._config.humidity_entity || attrs.current_humidity != null;
+      sr.querySelectorAll('.humid-part').forEach(el => { el.style.display = hasHumid ? '' : 'none'; });
       sr.querySelector('.room-temp').textContent  = tempStr;
       sr.querySelector('.room-humid').textContent = humidStr;
       sr.querySelector('.mode-label').textContent = this._modeLabel(mode);
@@ -3070,13 +3146,16 @@ const _setLang = (h, o) => {   // o = instance (card/éditeur) : true tant que L
       this._section('Entité principale');
       this._entity('entity', 'Entité climate *', 'climate');
       this._text('name', 'Nom affiché', 'Vide = friendly_name');
+      this._icon('icon', "Icône de la puce (mdi)");
+      this._hint("Puce de l'en-tête quand plusieurs clims — vide = devinée sur le nom (chambre, bureau, salon…)");
 
       this._group('Clims supplémentaires', false, () => {
         this._hint("Facultatif — chaque clim ajoutée apparaît comme une puce dans l'en-tête ; la card bascule de l'une à l'autre.");
         for (let i = 0; i < 3; i++) {
           this._group('Clim ' + (i + 2), false, () => {
             this._entity(`extra_climates.${i}.entity`, 'Entité climate', 'climate');
-            this._text(`extra_climates.${i}.name`, "Nom (puce de l'en-tête)", 'Vide = friendly_name');
+            this._text(`extra_climates.${i}.name`, "Nom (bulle de la puce)", 'Vide = friendly_name');
+            this._icon(`extra_climates.${i}.icon`, "Icône de la puce (mdi)");
             this._entity(`extra_climates.${i}.humidity_entity`, 'Entité humidité', 'sensor');
             this._entity(`extra_climates.${i}.power_entity`, 'Entité puissance', 'sensor');
             this._text(`extra_climates.${i}.power_threshold`, 'Seuil puissance (W)', '10');

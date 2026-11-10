@@ -62,6 +62,9 @@ humidity_entity: sensor.living_room_humidity   # optional
 header:
   title: Climate
   icon: mdi:heat-pump
+extra_climates:                                 # optional — more units in the same card
+  - entity: climate.office
+    name: Office
 ```
 
 ## ⚙️ Options
@@ -70,7 +73,9 @@ header:
 |---|---|---|---|
 | `entity` | string | **required** | A `climate.*` entity |
 | `name` | string | `friendly_name` | Label shown above the display |
-| `humidity_entity` | string | — | Sensor used for the humidity readout (otherwise `current_humidity`) |
+| `humidity_entity` | string | — | Sensor used for the humidity readout (otherwise `current_humidity`). With neither, the HUMID column is hidden |
+| `icon` | string | guessed from the name | Header button icon when the card holds several units (bedroom, office, living room… otherwise `mdi:air-conditioner`) |
+| `extra_climates` | list | — | More units in the same card, each with `entity`, `name`, `icon`, `humidity_entity`, `power_entity`, `power_threshold`. Each gets an icon button in the header; the button glows in the mode colour while that unit is blowing |
 | `show_wind` | bool | `true` | Show the airflow under the louvres |
 | `power_entity` | string | — | Power sensor: the airflow only shows above `power_threshold` |
 | `power_threshold` | number | `10` | Watts |
